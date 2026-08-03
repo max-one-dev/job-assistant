@@ -1,0 +1,117 @@
+{
+  "search": {
+    "queries": ["[TECH_1]", "[TECH_2]", "[TECH_3]"],
+    "schedule": "remote",
+    "area": "",
+    "items_on_page": 50,
+    "max_pages": 2,
+    "request_delay_sec": 2.0,
+    "max_new_details_per_run": 40
+  },
+  "scoring": {
+    "keywords": {
+      "[TECH_PRIMARY]": 30,
+      "Backend": 15,
+      "REST API": 10,
+      "MySQL": 10,
+      "Docker": 10,
+      "Git": 5,
+      "Composer": 5,
+      "[FRAMEWORK]": 10,
+      "[SPECIALIZATION_1]": 20,
+      "[SPECIALIZATION_2]": 15,
+      "[UNWANTED_TECH]": -100,
+      "Team Lead": -30
+    },
+    "remote_bonus": 30,
+    "salary": {
+      "currency": "RUR",
+      "tier1_amount": 0,
+      "tier1_bonus": 20,
+      "tier2_amount": 0,
+      "tier2_bonus": 10
+    },
+    "office_only_penalty": -100,
+    "relocation_penalty": -100,
+    "senior_laravel_5y_penalty": -40,
+    "project_employment_penalty": -30,
+    "wp_other_cms_penalty": -10,
+    "wp_english_penalty": -15,
+    "wordpress_role_bonus": 55,
+    "page_builder_penalty": -20,
+    "frontend_role_penalty": -30,
+    "senior_penalty": -40,
+    "schedule_penalty": -40,
+    "english_required_penalty": -15
+  },
+  "probability": {
+    "target_score": 110,
+    "comment": "устаревшая модель; активна модель v2 ниже"
+  },
+  "v2": {
+    "base_score": 50,
+    "add": {
+      "[SPECIALIZATION_1]": 35,
+      "[SPECIALIZATION_2]": 20,
+      "Backend": 20,
+      "REST API": 15,
+      "Архитектура": 15,
+      "Интеграции": 15,
+      "Performance": 10,
+      "Legacy": 10,
+      "Docker": 5,
+      "Composer": 5,
+      "Git": 5,
+      "CI/CD": 5,
+      "[FRAMEWORK]": 10
+    },
+    "penalty": {
+      "[FRAMEWORK]_2y": -25,
+      "[FRAMEWORK]_primary": -15,
+      "react_primary": -20,
+      "vue_primary": -15,
+      "postgresql": -10,
+      "redis": -10,
+      "rabbitmq": -15,
+      "kafka": -20,
+      "elasticsearch": -15,
+      "aws": -15,
+      "ddd": -15,
+      "highload": -10
+    },
+    "type_prob": {
+      "[TYPE_1]": 0.98,
+      "[TYPE_2]": 0.92,
+      "[TYPE_3]": 0.75,
+      "[TYPE_3]_2y": 0.62,
+      "fullstack_php": 0.70,
+      "frontend": 0.40,
+      "other": 0.55,
+      "[UNWANTED_TYPE_1]": 0,
+      "devops": 0,
+      "qa": 0,
+      "security": 0,
+      "blockchain": 0,
+      "java": 0,
+      "python": 0,
+      "mobile": 0,
+      "non_dev": 0
+    },
+    "reject_types": ["[UNWANTED_TYPE_1]", "devops", "qa", "security", "blockchain", "java", "python", "mobile", "non_dev"],
+    "overrides": {
+      "senior_hard_factor": 0.5,
+      "senior_soft_factor": 0.85,
+      "symfony_primary_prob_cap": 0.45,
+      "symfony_primary_penalty": -20,
+      "schedule_prob_factor": 0.5,
+      "english_prob_factor": 0.85
+    },
+    "salary": {
+      "min": 0,
+      "comfortable": 0,
+      "target": 0,
+      "fulltime_below_min_factor": 0.85,
+      "parttime_no_rampup_factor": 0.9
+    }
+  }
+}

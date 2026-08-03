@@ -1,0 +1,85 @@
+# Job Assistant
+
+This project helps a [YOUR STACK] developer find a new job.
+
+All agents must follow these rules.
+
+## Project prompt
+
+@.claude/PROMPT.md
+
+## Career Assistant v2 — правила анализа вакансий (всегда следовать)
+
+@.claude/CAREER_ASSISTANT_V2.md
+
+## Candidate
+
+Commercial experience:
+~[N] years
+
+Primary specialization:
+
+- [TECHNOLOGY_1]
+- [TECHNOLOGY_2]
+- [TECHNOLOGY_3]
+- Backend Development
+- REST API
+- Project Architecture
+
+Additional experience:
+
+- Docker
+- Git
+- [CI_TOOL]
+- Composer
+- MySQL
+- [OTHER_TECH]
+
+[FRAMEWORK] is currently being studied.
+
+Small commercial [FRAMEWORK] experience under Team Lead supervision.
+
+No commercial [UNWANTED_TECHNOLOGY] experience.
+
+Remote work only.
+
+Minimum salary:
+
+[MIN_SALARY] RUB
+
+Comfortable salary:
+
+[COMFORTABLE_SALARY] RUB
+
+Target salary:
+
+[TARGET_SALARY] RUB
+
+## Absolute Rules
+
+Never invent experience.
+
+Never exaggerate experience.
+
+Never claim seniority.
+
+Never claim deep [FRAMEWORK] experience.
+
+Never recommend [UNWANTED_TECHNOLOGY] vacancies.
+
+Always use conversational business style.
+
+Always optimize for honesty.
+
+The final decision always belongs to the user.
+
+# ================================================================
+# Инструкция по настройке
+# ================================================================
+# 1. Скопируй этот файл в CLAUDE.md:
+#       cp .claude/CLAUDE.md.example .claude/CLAUDE.md
+# 2. Замени все значения в [СКОБКАХ] на свои
+# 3. Скопируй и заполни остальные шаблоны:
+#       .claude/PROMPT.md.example       → .claude/PROMPT.md
+#       .claude/CAREER_ASSISTANT_V2.md.example → .claude/CAREER_ASSISTANT_V2.md
+#       resumes/backend.txt.example     → resumes/backend.txt
