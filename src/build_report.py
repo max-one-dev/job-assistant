@@ -226,6 +226,8 @@ def card(v):
         flags.append("<span class='flag rev'>✓ просмотрено</span>")
     flags_html = f'<div class="flags">{" ".join(flags)}</div>' if flags else ""
 
+    skip_btn_html = ('' if status == 'skipped' else
+        f"""<button class="stn stn-archived" onclick="setStatus('{vid}','skipped')">⊘ Пропустить</button>""")
     return f"""
     <div class="card {band}{' wppri' if wp_pri else ''}" data-band="{band}" data-status="{e(status)}" data-id="{e(str(vid))}" data-wp="{1 if wp_pri else 0}" data-rev="{1 if reviewed else 0}" data-cat="{e(cat or '')}" data-fresh="{fbucket}">
       <div class="top">
@@ -255,7 +257,7 @@ def card(v):
         <a class="btn ghost" href="{e(v['url'])}" target="_blank">Открыть вакансию</a>
         <button class="stn stn-applied" onclick="setStatus('{vid}','applied')">✓ Откликнулся</button>
         <button class="stn stn-rejected" onclick="setStatus('{vid}','rejected')">✕ Отказ</button>
-        <button class="stn stn-archived" onclick="setStatus('{vid}','skipped')">⊘ Пропустить</button>
+        {skip_btn_html}
         <span class="idtag">id {e(vid)} · тип {e(v.get('vac_type') or '—')} · балл {v.get('score',0)} · rank {v.get('final_rank',0)} · найдена: {e(ru_dt(v.get('first_seen','')))}</span>
       </div>
     </div>"""
@@ -335,9 +337,10 @@ def main():
  .toolbar .tb:hover{{background:#2b3442}} .toolbar .tb:disabled{{opacity:.5;cursor:default}}
  .toolbar .tb.up{{background:#2f6feb;color:#fff;border-color:#2f6feb;font-weight:600}}
  .toolbar .tb.up:hover{{background:#3b7bf7}}
+ .toolbar .tb.flt-on{{background:#152438;border-color:#2f6feb;color:#74c0fc}}
  .toolbar .tb-sep{{color:#6b7480;font-size:12px;margin-left:8px}}
  .toolbar .tb-msg{{font-size:12px;color:#8bc34a;margin-left:6px}} .toolbar .tb-msg.err{{color:#ff8787}} .toolbar .tb-msg.wait{{color:#ffd43b}}
- .filters{{margin-top:10px}} .filters small{{color:#6b7480;margin-right:6px;display:inline-block;min-width:74px}}
+ .filters{{display:none;margin-top:10px}} .filters.open{{display:block}} .filters small{{color:#6b7480;margin-right:6px;display:inline-block;min-width:74px}}
  .frow{{margin-bottom:6px;display:flex;flex-wrap:wrap;align-items:center;gap:6px}}
  .filters button{{background:#232a36;color:#cbd5e1;border:1px solid #333c4a;border-radius:6px;padding:4px 11px;cursor:pointer;font-size:13px}}
  .filters button.active{{background:#2f6feb;color:#fff;border-color:#2f6feb}}
@@ -401,6 +404,8 @@ def main():
     <button class="tb" onclick="apiExport('visible',this)" title="Все вакансии, которые видны в этом отчёте">💾 Все из отчёта</button>
     <button class="tb" onclick="apiExport('new_interested',this)" title="Только новые и отмеченные «интересно» — те, на которые ещё стоит откликнуться">💾 Куда откликнуться (новые + интересные)</button>
     <button class="tb" onclick="apiExport('funnel',this)" title="Только те, что уже в работе: интересно / откликнулся / собеседование / оффер / отказ">💾 Мои отклики (воронка)</button>
+    <button class="tb" onclick="apiExport('unprocessed',this)" title="Вакансии без решения — не откликнулся, не пропущено, не отказано">💾 Необработанные</button>
+    <button class="tb" id="btnFlt" onclick="toggleFlt()">⚙ Фильтры ▼</button>
     <span id="tbmsg" class="tb-msg"></span>
   </div>
   <div class="sum">🟢 {cnt['green']} · 🟡 {cnt['yellow']} · 🟠 {cnt['orange']} · 🔴 {cnt['red']} · ✉️ писем: {n_letters} · ⭐ WordPress: {n_wp} · 👀 непросмотрено: {n_unreviewed}
@@ -459,13 +464,23 @@ def main():
      var k=b.dataset.k,v=b.dataset.v,n=0;
      CARDS.forEach(function(c){{if(matchExcept(c,k)&&(v==='all'||c.dataset[k]===v))n++;}});
      var el=b.querySelector('.cnt'); if(el) el.textContent=n;}});
-   var note=document.getElementById('nores'); if(note) note.style.display=shown?'none':'';}}
+   var note=document.getElementById('nores'); if(note) note.style.display=shown?'none':'';
+   syncFltBtn();}}
  function flt(btn){{var k=btn.dataset.k;
    document.querySelectorAll('.filters button[data-k=\"'+k+'\"]').forEach(function(b){{b.classList.remove('active');}});
    btn.classList.add('active'); F[k]=btn.dataset.v; apply();}}
  function resetF(){{DIMS.forEach(function(k){{F[k]='all';}});
    document.querySelectorAll('.filters button[data-k]').forEach(function(b){{b.classList.toggle('active',b.dataset.v==='all');}});
    apply();}}
+ function toggleFlt(){{
+   var f=document.querySelector('.filters'),b=document.getElementById('btnFlt');
+   if(!f)return;
+   var op=f.classList.toggle('open');
+   if(b)b.textContent=op?'⚙ Фильтры ▲':'⚙ Фильтры ▼';}}
+ function syncFltBtn(){{
+   var b=document.getElementById('btnFlt');if(!b)return;
+   var n=DIMS.filter(function(k){{return F[k]!=='all';}}).length;
+   b.classList.toggle('flt-on',n>0);}}
  document.addEventListener('DOMContentLoaded',function(){{CARDS=Array.prototype.slice.call(document.querySelectorAll('.card'));apply();}});
  function copyLetter(id){{navigator.clipboard.writeText(document.getElementById('letter-'+id).innerText);}}
  function tbMsg(t,cls){{var m=document.getElementById('tbmsg');if(m){{m.textContent=t;m.className='tb-msg'+(cls?' '+cls:'');}}}}
@@ -493,7 +508,16 @@ def main():
      .then(function(d){{
        if(d.ok){{
          var c=document.querySelector('.card[data-id="'+vid+'"]');
-         if(c){{c.dataset.status=status;var b=c.querySelector('.status');if(b){{b.textContent=SL[status]||status;b.className='status st-'+status;}}}}
+         if(c){{
+           c.dataset.status=status;
+           var b=c.querySelector('.status');if(b){{b.textContent=SL[status]||status;b.className='status st-'+status;}}
+           var sk=c.querySelector('.stn-archived');if(sk)sk.style.display=status==='skipped'?'none':'';
+           if(d.history_entry){{
+             var hd=c.querySelector('details.hist');
+             if(hd){{var ul=hd.querySelector('ul');var sm=hd.querySelector('summary');
+               if(ul){{var li=document.createElement('li');li.innerHTML='<span class="hd">'+d.history_entry.date_fmt+'</span> '+d.history_entry.event;ul.appendChild(li);}}
+               if(sm){{var cnt=hd.querySelectorAll('li').length;sm.textContent='История ('+cnt+')';}}}}}}
+         }}
          apply();
        }}else{{tbMsg('Ошибка: '+(d.msg||''),'err');}}
      }}).catch(function(e){{tbMsg('Нет связи: '+e,'err');}});}}

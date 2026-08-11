@@ -94,7 +94,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/export":
             mode = (parse_qs(u.query).get("mode") or ["visible"])[0]
-            if mode not in ("visible", "new_interested", "funnel"):
+            if mode not in ("visible", "new_interested", "funnel", "unprocessed"):
                 return self._json({"ok": False, "msg": f"bad mode: {mode}"}, 400)
             ok, out = run_py("export_vacancies.py", mode)
             return self._json({"ok": ok, "mode": mode,
@@ -103,6 +103,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/status":
             from datetime import datetime, timezone, timedelta
             MSK = timezone(timedelta(hours=3))
+            MONTHS_RU = ["января","февраля","марта","апреля","мая","июня","июля",
+                         "августа","сентября","октября","ноября","декабря"]
             qs = parse_qs(u.query)
             vid = (qs.get("id") or [""])[0].strip()
             status = (qs.get("status") or [""])[0].strip()
@@ -119,17 +121,18 @@ class Handler(BaseHTTPRequestHandler):
                 LABEL = {"new": "новая", "interested": "интересно", "applied": "откликнулся",
                          "interview": "собеседование", "offer": "оффер",
                          "rejected": "отказ", "skipped": "пропущена", "archived": "в архиве"}
-                now = datetime.now(MSK).isoformat(timespec="seconds")
+                dt_now = datetime.now(MSK)
+                now = dt_now.isoformat(timespec="seconds")
+                date_fmt = f"{dt_now.day} {MONTHS_RU[dt_now.month-1]} {dt_now.year}, {dt_now.strftime('%H:%M')}"
                 old = store[vid].get("status", "new")
+                event = f"Статус: {LABEL.get(old, old)} → {LABEL.get(status, status)}"
                 store[vid]["status"] = status
-                store[vid].setdefault("history", []).append({
-                    "date": now,
-                    "event": f"Статус: {LABEL.get(old, old)} → {LABEL.get(status, status)}"
-                })
+                store[vid].setdefault("history", []).append({"date": now, "event": event})
                 with io.open(store_path, "w", encoding="utf-8") as f:
                     json.dump(store, f, ensure_ascii=False, indent=2)
                 run_py("build_report.py")
-                return self._json({"ok": True, "id": vid, "status": status})
+                return self._json({"ok": True, "id": vid, "status": status,
+                                   "history_entry": {"date_fmt": date_fmt, "event": event}})
             except Exception as ex:
                 return self._json({"ok": False, "msg": str(ex)}, 500)
 

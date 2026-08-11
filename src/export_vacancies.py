@@ -22,7 +22,7 @@ DATA = os.path.join(ROOT, "data")
 STORE = os.path.join(DATA, "store.json")
 OUT = os.path.join(DATA, "vacancies.json")
 
-MODES = ("visible", "new_interested", "funnel")
+MODES = ("visible", "new_interested", "funnel", "unprocessed")
 FUNNEL = ("interested", "applied", "interview", "offer", "rejected")
 
 # поля экспорта: id/score/rank/status/v2_status/name/company/salary/matched/description
@@ -53,6 +53,8 @@ def select(store, mode):
         return [v for v in vals if v.get("status") in ("new", "interested") and visible(v)]
     if mode == "funnel":
         return [v for v in vals if v.get("status") in FUNNEL]
+    if mode == "unprocessed":
+        return [v for v in vals if v.get("status") in ("new", "interested") and visible(v)]
     raise ValueError(f"unknown mode: {mode}")
 
 
