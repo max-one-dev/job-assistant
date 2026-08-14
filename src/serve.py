@@ -12,7 +12,7 @@ Endpoints (вызываются кнопками в отчёте через fetc
 
 Сервер локальный (127.0.0.1), наружу ничего не публикует.
 """
-import os, sys, io, json, subprocess, webbrowser
+import os, sys, io, json, subprocess, webbrowser, threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -36,6 +36,85 @@ def run_py(*args):
         return p.returncode == 0, out.strip()
     except Exception as e:
         return False, f"{type(e).__name__}: {e}"
+
+
+# ── Background update state ──
+_bg_lock = threading.Lock()
+_bg_state = {"running": False, "steps": [], "current": "", "done": True, "ok": True}
+
+
+def _bg_update():
+    global _bg_state
+    pipeline = [
+        ("collect.py",         "сбор вакансий",    []),
+        ("rescore.py",         "пересчёт баллов",  []),
+        ("build_report.py",    "отчёт",            []),
+        ("export_vacancies.py","экспорт",           ["visible"]),
+    ]
+    with _bg_lock:
+        _bg_state = {"running": True, "steps": [], "current": pipeline[0][1], "done": False, "ok": None}
+    ok = True
+    steps = []
+    for script, label, args in pipeline:
+        with _bg_lock:
+            _bg_state["current"] = label
+        ok, out = run_py(script, *args)
+        steps.append({"name": label, "ok": ok})
+        with _bg_lock:
+            _bg_state["steps"] = steps[:]
+        if not ok:
+            break
+    with _bg_lock:
+        _bg_state.update({"running": False, "current": "", "done": True, "ok": ok})
+
+
+# ── Check-closed state ──
+_check_lock = threading.Lock()
+_check_state = {"running": False, "total": 0, "checked": 0, "closed": 0,
+                "done": True, "ok": True, "current": ""}
+
+
+def _check_closed_thread():
+    global _check_state
+    import sys as _sys
+    sys_path = list(_sys.path)
+
+    try:
+        import importlib.util as _ilu
+        spec = _ilu.spec_from_file_location("check_closed",
+                                             os.path.join(HERE, "check_closed.py"))
+        mod = _ilu.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        # Count targets first
+        import io as _io, json as _json
+        store_path = os.path.join(DATA, "store.json")
+        try:
+            with _io.open(store_path, encoding="utf-8") as f:
+                _store = _json.load(f)
+        except FileNotFoundError:
+            _store = {}
+        _to_check = [v for v in _store.values()
+                     if v.get("status") in mod.CHECK_STATUSES and mod.is_visible(v)]
+        total = len(_to_check)
+
+        with _check_lock:
+            _check_state.update({"running": True, "total": total,
+                                  "checked": 0, "closed": 0,
+                                  "done": False, "ok": None, "current": "проверка"})
+
+        def progress_cb(checked, total, closed):
+            with _check_lock:
+                _check_state.update({"checked": checked, "total": total, "closed": closed})
+
+        closed = mod.main(progress_cb=progress_cb)
+        with _check_lock:
+            _check_state.update({"running": False, "done": True, "ok": True,
+                                  "current": "", "closed": closed})
+    except Exception as ex:
+        with _check_lock:
+            _check_state.update({"running": False, "done": True, "ok": False,
+                                  "current": str(ex)})
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -100,6 +179,51 @@ class Handler(BaseHTTPRequestHandler):
             return self._json({"ok": ok, "mode": mode,
                                "msg": out.splitlines()[-1] if out else ""})
 
+        if path == "/api/mark-reviewed":
+            from datetime import date
+            qs = parse_qs(u.query)
+            vid = (qs.get("id") or [""])[0].strip()
+            if not vid:
+                return self._json({"ok": False, "msg": "missing id"}, 400)
+            feedback_path = os.path.join(DATA, "feedback.json")
+            try:
+                try:
+                    with io.open(feedback_path, encoding="utf-8") as f:
+                        fb = json.load(f)
+                except FileNotFoundError:
+                    fb = {}
+                fb[vid] = {"verdict": "reviewed", "reason": "manual_review",
+                           "note": "Отмечено просмотренным вручную",
+                           "date": str(date.today())}
+                with io.open(feedback_path, "w", encoding="utf-8") as f:
+                    json.dump(fb, f, ensure_ascii=False, indent=2)
+                run_py("build_report.py")
+                return self._json({"ok": True, "id": vid})
+            except Exception as ex:
+                return self._json({"ok": False, "msg": str(ex)}, 500)
+
+        if path == "/api/update-bg":
+            with _bg_lock:
+                if _bg_state.get("running"):
+                    return self._json({"ok": False, "msg": "Обновление уже запущено"})
+            threading.Thread(target=_bg_update, daemon=True).start()
+            return self._json({"ok": True})
+
+        if path == "/api/progress":
+            with _bg_lock:
+                return self._json(dict(_bg_state))
+
+        if path == "/api/check-closed":
+            with _check_lock:
+                if _check_state.get("running"):
+                    return self._json({"ok": False, "msg": "Проверка уже запущена"})
+            threading.Thread(target=_check_closed_thread, daemon=True).start()
+            return self._json({"ok": True})
+
+        if path == "/api/check-progress":
+            with _check_lock:
+                return self._json(dict(_check_state))
+
         if path == "/api/status":
             from datetime import datetime, timezone, timedelta
             MSK = timezone(timedelta(hours=3))
@@ -120,7 +244,7 @@ class Handler(BaseHTTPRequestHandler):
                     return self._json({"ok": False, "msg": f"not found: {vid}"}, 404)
                 LABEL = {"new": "новая", "interested": "интересно", "applied": "откликнулся",
                          "interview": "собеседование", "offer": "оффер",
-                         "rejected": "отказ", "skipped": "пропущена", "archived": "в архиве"}
+                         "rejected": "отказ", "skipped": "пропущена", "archived": "Закрыта"}
                 dt_now = datetime.now(MSK)
                 now = dt_now.isoformat(timespec="seconds")
                 date_fmt = f"{dt_now.day} {MONTHS_RU[dt_now.month-1]} {dt_now.year}, {dt_now.strftime('%H:%M')}"
