@@ -41,10 +41,12 @@ def run_py(*args):
 # ── Background update state ──
 _bg_lock = threading.Lock()
 _bg_state = {"running": False, "steps": [], "current": "", "done": True, "ok": True}
+_bg_cancel = threading.Event()
 
 
 def _bg_update():
     global _bg_state
+    _bg_cancel.clear()
     pipeline = [
         ("collect.py",         "сбор вакансий",    []),
         ("rescore.py",         "пересчёт баллов",  []),
@@ -56,6 +58,10 @@ def _bg_update():
     ok = True
     steps = []
     for script, label, args in pipeline:
+        if _bg_cancel.is_set():
+            with _bg_lock:
+                _bg_state.update({"running": False, "current": "", "done": True, "ok": False, "steps": steps[:]})
+            return
         with _bg_lock:
             _bg_state["current"] = label
         ok, out = run_py(script, *args)
@@ -72,10 +78,12 @@ def _bg_update():
 _check_lock = threading.Lock()
 _check_state = {"running": False, "total": 0, "checked": 0, "closed": 0,
                 "done": True, "ok": True, "current": ""}
+_check_cancel = threading.Event()
 
 
 def _check_closed_thread():
     global _check_state
+    _check_cancel.clear()
     import sys as _sys
     sys_path = list(_sys.path)
 
@@ -106,11 +114,18 @@ def _check_closed_thread():
         def progress_cb(checked, total, closed):
             with _check_lock:
                 _check_state.update({"checked": checked, "total": total, "closed": closed})
+            if _check_cancel.is_set():
+                raise InterruptedError("cancelled")
 
-        closed = mod.main(progress_cb=progress_cb)
-        with _check_lock:
-            _check_state.update({"running": False, "done": True, "ok": True,
-                                  "current": "", "closed": closed})
+        try:
+            closed = mod.main(progress_cb=progress_cb)
+            with _check_lock:
+                _check_state.update({"running": False, "done": True, "ok": True,
+                                      "current": "", "closed": closed})
+        except InterruptedError:
+            with _check_lock:
+                _check_state.update({"running": False, "done": True, "ok": False,
+                                      "current": "отменено"})
     except Exception as ex:
         with _check_lock:
             _check_state.update({"running": False, "done": True, "ok": False,
@@ -224,6 +239,14 @@ class Handler(BaseHTTPRequestHandler):
             with _check_lock:
                 return self._json(dict(_check_state))
 
+        if path == "/api/cancel-bg":
+            _bg_cancel.set()
+            return self._json({"ok": True})
+
+        if path == "/api/cancel-check":
+            _check_cancel.set()
+            return self._json({"ok": True})
+
         if path == "/api/status":
             from datetime import datetime, timezone, timedelta
             MSK = timezone(timedelta(hours=3))
@@ -259,6 +282,31 @@ class Handler(BaseHTTPRequestHandler):
                                    "history_entry": {"date_fmt": date_fmt, "event": event}})
             except Exception as ex:
                 return self._json({"ok": False, "msg": str(ex)}, 500)
+
+        self.send_response(404)
+        self.end_headers()
+
+    def do_POST(self):
+        u = urlparse(self.path)
+        path = u.path
+
+        if path == "/api/export":
+            length = int(self.headers.get("Content-Length") or 0)
+            body = self.rfile.read(length) if length else b"{}"
+            try:
+                cfg = json.loads(body)
+            except Exception:
+                return self._json({"ok": False, "msg": "invalid JSON"}, 400)
+            mode = cfg.get("mode", "custom")
+            if mode == "custom":
+                cfg_json = json.dumps(cfg, ensure_ascii=False)
+                ok, out = run_py("export_vacancies.py", "--custom", cfg_json)
+            else:
+                if mode not in ("visible", "new_interested", "funnel", "unprocessed"):
+                    return self._json({"ok": False, "msg": f"bad mode: {mode}"}, 400)
+                ok, out = run_py("export_vacancies.py", mode)
+            return self._json({"ok": ok, "mode": mode,
+                               "msg": out.splitlines()[-1] if out else ""})
 
         self.send_response(404)
         self.end_headers()

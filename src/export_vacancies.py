@@ -26,6 +26,8 @@ MODES = ("visible", "new_interested", "funnel", "unprocessed")
 FUNNEL = ("interested", "applied", "interview", "offer", "rejected")
 
 # поля экспорта: id/score/rank/status/v2_status/name/company/salary/matched/description
+ALL_FIELDS = ("id", "score", "rank", "status", "v2_status", "name", "company", "salary", "matched", "description")
+DEFAULT_FIELDS = ("id", "score", "rank", "status", "v2_status", "name", "company", "salary", "matched")
 
 
 def visible(v):
@@ -99,6 +101,80 @@ def slim(v):
     }
 
 
+def apply_field_mask(items, fields):
+    """Оставить только указанные поля в каждом объекте."""
+    if not fields:
+        return items
+    fs = set(fields)
+    return [{k: v for k, v in item.items() if k in fs} for item in items]
+
+
+def select_custom(store, cfg):
+    """Фильтр вакансий по кастомной конфигурации."""
+    filters = cfg.get("filters") or {}
+    statuses = filters.get("statuses") or []
+    min_salary = int(filters.get("min_salary") or 0)
+    min_score = int(filters.get("min_score") or 0)
+    prob_band = filters.get("probability_band") or ""
+
+    result = []
+    for v in store.values():
+        if statuses and v.get("status") not in statuses:
+            continue
+        if min_score > 0 and (v.get("score") or 0) < min_score:
+            continue
+        if min_salary > 0:
+            sal = v.get("salary") or {}
+            sal_from = sal.get("from") or 0
+            sal_to = sal.get("to") or 0
+            if (sal_from or sal_to) and sal_from < min_salary and sal_to < min_salary:
+                continue
+        if prob_band == "high" and (v.get("probability") or 0) < 70:
+            continue
+        if prob_band == "medium":
+            p = v.get("probability") or 0
+            if p < 50 or p >= 70:
+                continue
+        if prob_band == "low" and (v.get("probability") or 0) >= 50:
+            continue
+        result.append(v)
+    return result
+
+
+def export_custom(cfg):
+    store = br.read_json(STORE, {})
+    filters = cfg.get("filters") or {}
+    items = dedupe(select_custom(store, cfg))
+
+    sort_by = cfg.get("sort") or "rank"
+    if sort_by == "score":
+        items.sort(key=lambda v: -(v.get("score") or 0))
+    elif sort_by == "date":
+        items.sort(key=lambda v: str(v.get("published_at") or ""), reverse=True)
+    else:
+        def _rank_key(v):
+            try:
+                return -((v.get("final_rank") or v.get("probability", 0) or 0)
+                         * br.freshness_info(v)[2])
+            except Exception:
+                return 0
+        items.sort(key=_rank_key)
+
+    limit = int(filters.get("limit") or 0)
+    if limit > 0:
+        items = items[:limit]
+
+    fields = cfg.get("fields") or list(DEFAULT_FIELDS)
+    out = apply_field_mask([slim(v) for v in items], fields)
+    with io.open(OUT, "w", encoding="utf-8") as f:
+        f.write("[\n")
+        for i, v in enumerate(out):
+            sep = "" if i == len(out) - 1 else ","
+            f.write("  " + json.dumps(v, ensure_ascii=False) + sep + "\n")
+        f.write("]\n")
+    return len(out)
+
+
 def export(mode="visible"):
     if mode not in MODES:
         raise ValueError(f"mode must be one of {MODES}, got {mode!r}")
@@ -117,9 +193,14 @@ def export(mode="visible"):
 
 
 def main():
-    mode = sys.argv[1] if len(sys.argv) > 1 else "new_interested"
-    n = export(mode)
-    print(f"vacancies.json exported: {n} vacancies (mode={mode}, no letters)")
+    if len(sys.argv) > 1 and sys.argv[1] == "--custom":
+        cfg = json.loads(sys.argv[2]) if len(sys.argv) > 2 else {}
+        n = export_custom(cfg)
+        print(f"vacancies.json exported: {n} vacancies (mode=custom, no letters)")
+    else:
+        mode = sys.argv[1] if len(sys.argv) > 1 else "new_interested"
+        n = export(mode)
+        print(f"vacancies.json exported: {n} vacancies (mode={mode}, no letters)")
 
 
 if __name__ == "__main__":

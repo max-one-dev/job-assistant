@@ -449,6 +449,44 @@ header h1{{font-size:17px;margin-bottom:5px;font-weight:600}}
 .sort-sel{{background:#232a36;color:#9aa4b2;border:1px solid #333c4a;border-radius:6px;padding:5px 8px;font-size:12px;cursor:pointer;margin-left:auto}}
 .sort-sel:hover{{background:#2b3442;color:#e6e6e6}}
 
+/* ── SIDEBAR ACTIONS ── */
+.sb-section{{padding:8px 8px 10px;border-bottom:1px solid #1e2530}}
+.sb-lbl{{font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#6b7480;margin-bottom:5px;font-weight:600}}
+.sb-row{{display:flex;gap:5px;align-items:center}}
+.sb-sel{{flex:1;background:#1a2030;color:#9aa4b2;border:1px solid #252d3c;border-radius:5px;padding:4px 6px;font-size:12px;cursor:pointer;min-width:0}}
+.sb-sel:hover,.sb-sel:focus{{background:#222c3c;color:#e0e6f0;outline:none}}
+.sb-btn{{background:#1e3a5f;color:#74c0fc;border:1px solid #2a5080;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:14px;flex-shrink:0;line-height:1}}
+.sb-btn:hover{{background:#234870}} .sb-btn:disabled{{opacity:.5;cursor:default}}
+.sb-btn-cfg{{display:block;width:100%;background:#1a2030;color:#8a95a3;border:1px solid #252d3c;border-radius:5px;padding:4px 8px;cursor:pointer;font-size:12px;text-align:left;margin-top:5px}}
+.sb-btn-cfg:hover{{background:#222c3c;color:#e0e6f0}}
+.sb-sum{{font-size:11px;color:#555e6b;margin-top:4px;line-height:1.4;padding:0 1px}}
+.sb-progress{{display:none;padding:5px 8px;border-bottom:1px solid #1e2530}}
+
+/* ── EXPORT CONFIGURATOR ── */
+dialog.ex-modal{{background:#161a22;color:#e6e6e6;border:1px solid #333c4a;border-radius:12px;padding:0;max-width:520px;width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.65);position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);margin:0}}
+dialog.ex-modal::backdrop{{background:rgba(0,0,0,.55)}}
+.ex-hdr{{display:flex;justify-content:space-between;align-items:center;padding:15px 20px 12px;border-bottom:1px solid #262b36}}
+.ex-hdr h2{{font-size:15px;font-weight:600}}
+.ex-cls{{background:none;border:none;color:#6b7480;font-size:20px;cursor:pointer;padding:2px 6px;line-height:1}}
+.ex-cls:hover{{color:#e6e6e6}}
+.ex-body{{padding:16px 20px;max-height:58vh;overflow-y:auto}}
+.ex-sec-lbl{{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#6b7480;margin-bottom:7px;font-weight:600}}
+.ex-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:4px;margin-bottom:6px}}
+.ex-chk{{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 6px;border-radius:4px;color:#9aa4b2;user-select:none}}
+.ex-chk:hover{{background:#1a2030;color:#e6e6e6}}
+.ex-chk input[type=checkbox]{{width:13px;height:13px;cursor:pointer;accent-color:#2f6feb;flex-shrink:0}}
+.ex-hr{{border:none;border-top:1px solid #1e2530;margin:12px 0}}
+.ex-stat-grid{{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}}
+.ex-fields-row{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}}
+.ex-fields-row-2{{grid-template-columns:repeat(2,1fr)}}
+.ex-field-lbl{{font-size:11px;color:#6b7480;margin-bottom:4px}}
+.ex-inp{{background:#0f1115;color:#e6e6e6;border:1px solid #333c4a;border-radius:5px;padding:4px 8px;font-size:12px;width:100%;box-sizing:border-box}}
+.ex-inp:focus{{outline:none;border-color:#2f6feb}}
+.ex-rsel{{background:#0f1115;color:#e6e6e6;border:1px solid #333c4a;border-radius:5px;padding:4px 8px;font-size:12px;cursor:pointer;width:100%;box-sizing:border-box}}
+.ex-rsel:focus{{outline:none;border-color:#2f6feb}}
+.ex-ftr{{display:flex;justify-content:space-between;align-items:center;padding:10px 20px 14px;border-top:1px solid #262b36}}
+.ex-ftr-r{{display:flex;gap:7px}}
+
 /* ── LAYOUT ── */
 .layout{{display:flex;flex:1;overflow:hidden;min-height:0}}
 
@@ -469,12 +507,12 @@ header h1{{font-size:17px;margin-bottom:5px;font-weight:600}}
 .sf-arr{{font-size:9px;opacity:.55;flex-shrink:0}}
 .sf-body{{overflow:hidden;max-height:500px;opacity:1;transition:max-height 0.22s ease-out,opacity 0.18s ease}}
 .sf-body.sf-col{{max-height:0;opacity:0}}
-.sidebar button{{display:flex;justify-content:space-between;align-items:center;width:100%;background:#1a2030;color:#8a95a3;border:1px solid #252d3c;border-radius:5px;padding:5px 9px;cursor:pointer;font-size:12px;margin-bottom:2px;text-align:left;line-height:1.3}}
-.sidebar button:hover{{background:#222c3c;color:#e0e6f0}}
-.sidebar button.active{{background:#1e3a5f;color:#74c0fc;border-color:#2a5080;font-weight:600}}
-.sidebar button.active:hover{{background:#234870}}
+.sidebar .sf-body button{{display:flex;justify-content:space-between;align-items:center;width:100%;background:#1a2030;color:#8a95a3;border:1px solid #252d3c;border-radius:5px;padding:5px 9px;cursor:pointer;font-size:12px;margin-bottom:2px;text-align:left;line-height:1.3}}
+.sidebar .sf-body button:hover{{background:#222c3c;color:#e0e6f0}}
+.sidebar .sf-body button.active{{background:#1e3a5f;color:#74c0fc;border-color:#2a5080;font-weight:600}}
+.sidebar .sf-body button.active:hover{{background:#234870}}
 .cnt{{opacity:.6;font-size:11px;font-weight:600;flex-shrink:0;margin-left:4px}}
-.sidebar button.active .cnt{{opacity:.85}}
+.sidebar .sf-body button.active .cnt{{opacity:.85}}
 .reset-btn{{width:100%;background:#1e2530;color:#6b7480;border:1px solid #252d3c;border-radius:6px;padding:6px;cursor:pointer;font-size:12px;text-align:center}}
 .reset-btn:hover{{background:#2a1f1f;color:#ffb3b3;border-color:#5a2a2a}}
 
@@ -573,9 +611,9 @@ html.light .sf-title:hover{{color:#4a5568;background:#edf2f7}}
 html.light .sf-dot{{background:#2563eb}}
 html.light .sf-has-active .sf-dot{{display:inline-block}}
 html.light .sf-arr{{color:#9ca3af}}
-html.light .sidebar button{{background:#fff;color:#4a5568;border-color:#e2e8f0}}
-html.light .sidebar button:hover{{background:#edf2f7;color:#1a202c}}
-html.light .sidebar button.active{{background:#ebf8ff;color:#1d4ed8;border-color:#bfdbfe}}
+html.light .sidebar .sf-body button{{background:#fff;color:#4a5568;border-color:#e2e8f0}}
+html.light .sidebar .sf-body button:hover{{background:#edf2f7;color:#1a202c}}
+html.light .sidebar .sf-body button.active{{background:#ebf8ff;color:#1d4ed8;border-color:#bfdbfe}}
 html.light .sidebar-footer{{background:#f8fafc;border-color:#e2e8f0}}
 html.light .reset-btn{{background:#fff;color:#718096;border-color:#e2e8f0}}
 html.light .reset-btn:hover{{background:#fee2e2;color:#991b1b;border-color:#fca5a5}}
@@ -647,23 +685,38 @@ html.light .tb-msg{{color:#374151}}
 html.light .tb-msg.wait{{color:#d97706}}
 html.light .tb-msg.err{{color:#dc2626}}
 html.light .tb-msg.ok{{color:#16a34a}}
+html.light .sb-section{{border-color:#e2e8f0}}
+html.light .sb-lbl{{color:#9ca3af}}
+html.light .sb-sel{{background:#fff;color:#4a5568;border-color:#e2e8f0}}
+html.light .sb-sel:hover{{background:#edf2f7;color:#1a202c}}
+html.light .sb-btn{{background:#ebf8ff;color:#1d4ed8;border-color:#bfdbfe}}
+html.light .sb-btn:hover{{background:#dbeafe}}
+html.light .sb-btn-cfg{{background:#fff;color:#4a5568;border-color:#e2e8f0}}
+html.light .sb-btn-cfg:hover{{background:#edf2f7;color:#1a202c}}
+html.light .sb-sum{{color:#a0aec0}}
+html.light .sb-progress{{border-color:#e2e8f0}}
+html.light dialog.ex-modal{{background:#fff;color:#1f2937;border-color:#e2e8f0;box-shadow:0 20px 60px rgba(0,0,0,.15)}}
+html.light dialog.ex-modal::backdrop{{background:rgba(0,0,0,.3)}}
+html.light .ex-hdr{{border-color:#e2e8f0}}
+html.light .ex-cls{{color:#9ca3af}}
+html.light .ex-cls:hover{{color:#374151}}
+html.light .ex-sec-lbl{{color:#9ca3af}}
+html.light .ex-chk{{color:#4b5563}}
+html.light .ex-chk:hover{{background:#f3f4f6;color:#1f2937}}
+html.light .ex-field-lbl{{color:#9ca3af}}
+html.light .ex-inp{{background:#f9fafb;color:#1f2937;border-color:#e2e8f0}}
+html.light .ex-rsel{{background:#f9fafb;color:#1f2937;border-color:#e2e8f0}}
+html.light .ex-hr{{border-color:#e2e8f0}}
+html.light .ex-ftr{{border-color:#e2e8f0}}
+html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
 </style></head><body>
 
 <!-- ═══ HEADER ═══ -->
 <header>
   <h1>Job Assistant — журнал вакансий ({len(items)})</h1>
   <div class="toolbar">
-    <button class="tb up" onclick="apiUpdate()">📥 Собрать вакансии</button>
-    <button class="tb" id="btn-bgup" onclick="apiUpdateBg()">⏱ Фоновое обновление</button>
-    <button class="tb" id="btn-check" onclick="apiCheckClosed()">🔍 Обновить статусы</button>
     <button class="tb" id="btn-theme" onclick="toggleTheme()">☀ Светлая тема</button>
-    <span style="color:#6b7480;font-size:12px">vacancies.json:</span>
-    <button class="tb" onclick="apiExport('visible')">💾 Все из отчёта</button>
-    <button class="tb" onclick="apiExport('new_interested')">💾 Куда откликнуться</button>
-    <button class="tb" onclick="apiExport('funnel')">💾 Мои отклики</button>
-    <button class="tb" onclick="apiExport('unprocessed')">💾 Необработанные</button>
     <button class="tb" id="btn-compact" onclick="toggleCompact()">⊟ Компакт</button>
-    <span id="tbmsg" class="tb-msg"></span>
     <select class="sort-sel" id="sort-sel" onchange="sortCards(this.value)" title="Сортировка">
       <option value="rank">↕ По рейтингу</option>
       <option value="pub">↕ По дате публикации</option>
@@ -673,6 +726,72 @@ html.light .tb-msg.ok{{color:#16a34a}}
   <div class="sum">🟢 {cnt['green']} · 🟡 {cnt['yellow']} · 🟠 {cnt['orange']} · 🔴 {cnt['red']} · ✉️ {n_letters} · ⭐ {n_wp} · 👀 непросм: {n_unreviewed}
     <br><small style="color:#555e6b">Скрыто {hidden0} (рейтинг &lt;50%, архив, дубли {n_dupes} и др.). Вероятность — эвристика, не гарантия.</small></div>
 </header>
+
+<!-- ═══ EXPORT CONFIGURATOR MODAL ═══ -->
+<dialog id="ex-modal" class="ex-modal">
+  <div class="ex-hdr">
+    <h2>⚙ Кастомная конфигурация экспорта</h2>
+    <button class="ex-cls" onclick="exModalClose()" title="Закрыть">✕</button>
+  </div>
+  <div class="ex-body">
+    <div class="ex-sec-lbl">Поля в выгрузке</div>
+    <div class="ex-grid" id="ex-fields">
+      <label class="ex-chk"><input type="checkbox" value="id" checked> id</label>
+      <label class="ex-chk"><input type="checkbox" value="name" checked> name</label>
+      <label class="ex-chk"><input type="checkbox" value="company" checked> company</label>
+      <label class="ex-chk"><input type="checkbox" value="salary" checked> salary</label>
+      <label class="ex-chk"><input type="checkbox" value="score" checked> score</label>
+      <label class="ex-chk"><input type="checkbox" value="rank" checked> rank</label>
+      <label class="ex-chk"><input type="checkbox" value="status" checked> status</label>
+      <label class="ex-chk"><input type="checkbox" value="v2_status" checked> v2_status</label>
+      <label class="ex-chk"><input type="checkbox" value="matched" checked> matched</label>
+      <label class="ex-chk"><input type="checkbox" value="description"> description</label>
+    </div>
+    <hr class="ex-hr">
+    <div class="ex-sec-lbl">Статусы вакансий</div>
+    <div class="ex-stat-grid" id="ex-statuses">
+      <label class="ex-chk"><input type="checkbox" value="new" checked> new</label>
+      <label class="ex-chk"><input type="checkbox" value="interested" checked> interested</label>
+      <label class="ex-chk"><input type="checkbox" value="applied"> applied</label>
+      <label class="ex-chk"><input type="checkbox" value="interview"> interview</label>
+      <label class="ex-chk"><input type="checkbox" value="offer"> offer</label>
+      <label class="ex-chk"><input type="checkbox" value="rejected"> rejected</label>
+      <label class="ex-chk"><input type="checkbox" value="skipped"> skipped</label>
+      <label class="ex-chk"><input type="checkbox" value="archived"> archived</label>
+    </div>
+    <hr class="ex-hr">
+    <div class="ex-fields-row">
+      <div><div class="ex-field-lbl">Мин. зарплата</div><input class="ex-inp" type="number" id="ex-min-salary" min="0" value="0" placeholder="0 = без фильтра"></div>
+      <div><div class="ex-field-lbl">Мин. рейтинг</div><input class="ex-inp" type="number" id="ex-min-score" min="0" value="0" placeholder="0 = без фильтра"></div>
+      <div><div class="ex-field-lbl">Лимит строк</div><input class="ex-inp" type="number" id="ex-limit" min="0" value="0" placeholder="0 = без лимита"></div>
+    </div>
+    <div class="ex-fields-row ex-fields-row-2">
+      <div><div class="ex-field-lbl">Вероятность</div>
+        <select class="ex-rsel" id="ex-prob-band">
+          <option value="">Все группы</option>
+          <option value="high">Высокая (70%+)</option>
+          <option value="medium">Средняя (50–69%)</option>
+          <option value="low">Низкая (&lt;50%)</option>
+        </select>
+      </div>
+      <div><div class="ex-field-lbl">Сортировка</div>
+        <select class="ex-rsel" id="ex-sort">
+          <option value="rank">По рангу</option>
+          <option value="score">По рейтингу</option>
+          <option value="date">По дате</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="ex-ftr">
+    <button class="tb" onclick="exReset()">Сбросить</button>
+    <div class="ex-ftr-r">
+      <button class="tb" onclick="exModalClose()">Отмена</button>
+      <button class="tb up" onclick="exSave()">Сохранить</button>
+    </div>
+  </div>
+</dialog>
+
 <script>(function(){{
   var ls=window.__ls||{{}};
   if(ls['theme']==='light'){{var b=document.getElementById('btn-theme');if(b)b.textContent='🌙 Тёмная тема';}}
@@ -685,6 +804,42 @@ html.light .tb-msg.ok{{color:#16a34a}}
 
   <aside class="sidebar">
     <div class="sidebar-scroll">
+
+    <!-- ── Обновление ── -->
+    <div class="sb-section">
+      <div class="sb-lbl">Обновление</div>
+      <div class="sb-row">
+        <select class="sb-sel" id="sb-update-sel">
+          <option value="check">Проверить закрытые</option>
+          <option value="update">Обновить без проверки актуальности</option>
+          <option value="update-bg">Обновить с проверкой актуальности в фоне</option>
+        </select>
+        <button class="sb-btn" id="sb-update-btn" onclick="apiActionRun()" title="Запустить">▶</button>
+      </div>
+    </div>
+
+    <!-- ── Экспорт ── -->
+    <div class="sb-section">
+      <div class="sb-lbl">Экспорт в vacancies.json</div>
+      <div class="sb-row">
+        <select class="sb-sel" id="sb-export-sel" onchange="onExportPresetChange(this.value)">
+          <option value="unprocessed">Необработанные</option>
+          <option value="funnel">Мои отклики</option>
+          <option value="new_interested">Рекомендации</option>
+          <option value="visible">Все из отчёта</option>
+          <option value="custom">Настроить</option>
+        </select>
+        <button class="sb-btn" id="btn-export" onclick="apiExportRun()" title="Экспортировать">💾</button>
+      </div>
+      <div id="sb-cfg-row" style="display:none">
+        <button class="sb-btn-cfg" onclick="exModalOpen()">⚙ Настроить</button>
+      </div>
+      <div id="ex-sum" class="sb-sum"></div>
+    </div>
+
+    <!-- ── Прогресс ── -->
+    <div class="sb-progress"><span id="tbmsg" class="tb-msg"></span></div>
+
 {sidebar_html}
     </div>
     <div class="sidebar-footer">
@@ -857,25 +1012,180 @@ function markReviewed(vid){{
 
 // ── API helpers ──
 function copyLetter(id){{navigator.clipboard.writeText(document.getElementById('letter-'+id).innerText);}}
-function tbMsg(t,cls){{var m=document.getElementById('tbmsg');if(m){{m.textContent=t;m.className='tb-msg'+(cls?' '+cls:'');}}}}
-function tbBusy(b){{document.querySelectorAll('.toolbar .tb').forEach(function(x){{x.disabled=b;}});}}
+function tbMsg(t,cls){{
+  var m=document.getElementById('tbmsg');
+  if(!m)return;
+  m.textContent=t;
+  m.className='tb-msg'+(cls?' '+cls:'');
+  var p=document.querySelector('.sb-progress');
+  if(p)p.style.display=t?'block':'none';}}
+function tbBusy(b){{
+  document.querySelectorAll('.toolbar .tb').forEach(function(x){{x.disabled=b;}});
+  var eb=document.getElementById('btn-export');if(eb)eb.disabled=b;}}
 
-function apiUpdate(){{
-  if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
-  tbBusy(true);tbMsg('Обновляю — парсинг hh.ru, ~1–2 мин…','wait');
-  fetch('/api/update').then(function(r){{return r.json();}}).then(function(d){{
-    if(d.ok){{tbMsg('Готово. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
-    else{{tbBusy(false);var s=(d.steps||[]).map(function(x){{return x[0]+':'+(x[1]?'ok':'FAIL');}}).join(' ');tbMsg('Ошибка: '+s,'err');}}
-  }}).catch(function(e){{tbBusy(false);tbMsg('Нет связи. ('+e+')','err');}});}}
+function setUpdateBtn(cancel){{
+  var b=document.getElementById('sb-update-btn');
+  if(!b)return;
+  b.textContent=cancel?'✕':'▶';
+  b.title=cancel?'Отменить':'Запустить';
+  b.onclick=cancel?apiCancelRun:apiActionRun;
+  b.disabled=false;}}
 
-function apiExport(mode){{
+function apiCancelRun(){{
+  var mode=(document.getElementById('sb-update-sel')||{{}}).value||'check';
+  if(mode==='check'){{fetch('/api/cancel-check').catch(function(){{}});}}
+  else{{fetch('/api/cancel-bg').catch(function(){{}});}}
+  setUpdateBtn(false);
+  tbBusy(false);
+  tbMsg('Остановлено.','err');
+  if(_bgTimer){{clearTimeout(_bgTimer);_bgTimer=null;}}
+  if(_checkTimer){{clearTimeout(_checkTimer);_checkTimer=null;}}}}
+
+function apiActionRun(){{
   if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
+  var mode=(document.getElementById('sb-update-sel')||{{}}).value||'check';
+  var btn=document.getElementById('sb-update-btn');
+  if(btn)btn.disabled=true;
+  if(mode==='check'){{
+    tbMsg('Проверяю закрытые вакансии…','wait');
+    fetch('/api/check-closed').then(function(r){{return r.json();}}).then(function(d){{
+      if(!d.ok){{setUpdateBtn(false);tbMsg(d.msg||'Ошибка','err');return;}}
+      setUpdateBtn(true);
+      pollCheck();
+    }}).catch(function(e){{setUpdateBtn(false);tbMsg('Нет связи','err');}});
+  }}else if(mode==='update'){{
+    tbBusy(true);tbMsg('Обновляю — парсинг hh.ru, ~1–2 мин…','wait');
+    fetch('/api/update').then(function(r){{return r.json();}}).then(function(d){{
+      if(d.ok){{tbMsg('Готово. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
+      else{{tbBusy(false);setUpdateBtn(false);var s=(d.steps||[]).map(function(x){{return x[0]+':'+(x[1]?'ok':'FAIL');}}).join(' ');tbMsg('Ошибка: '+s,'err');}}
+    }}).catch(function(e){{tbBusy(false);setUpdateBtn(false);tbMsg('Нет связи. ('+e+')','err');}});
+  }}else{{
+    fetch('/api/update-bg').then(function(r){{return r.json();}}).then(function(d){{
+      if(!d.ok){{setUpdateBtn(false);tbMsg(d.msg||'Ошибка','err');return;}}
+      tbBusy(true);setUpdateBtn(true);tbMsg('Запущено в фоне…','wait');
+      pollBg();
+    }}).catch(function(e){{setUpdateBtn(false);tbMsg('Нет связи','err');}});}}}}
+
+var _bgTimer=null;
+function pollBg(){{
+  _bgTimer=setTimeout(function(){{
+    fetch('/api/progress').then(function(r){{return r.json();}}).then(function(d){{
+      var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
+      if(d.done){{
+        tbBusy(false);setUpdateBtn(false);
+        if(d.ok){{tbMsg('Готово: '+steps+'. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
+        else{{tbMsg('Ошибка: '+steps,'err');}}
+      }}else{{
+        var cur=d.current?d.current+'…':'';
+        tbMsg((steps?steps+' → ':'')+cur,'wait');
+        pollBg();}}
+    }}).catch(function(){{pollBg();}});
+  }},2000);}}
+
+var _checkTimer=null;
+function pollCheck(){{
+  _checkTimer=setTimeout(function(){{
+    fetch('/api/check-progress').then(function(r){{return r.json();}}).then(function(d){{
+      if(d.done){{
+        setUpdateBtn(false);
+        if(d.ok){{
+          if(d.closed>0){{
+            tbMsg('Закрыто '+d.closed+' из '+d.total+'. Перезагружаю…');
+            setTimeout(function(){{location.reload();}},1200);
+          }}else{{tbMsg('✓ Все открыты: проверено '+d.total+' вакансий.');}}
+        }}else{{tbMsg('Ошибка проверки: '+(d.current||''),'err');}}
+      }}else{{
+        tbMsg('Проверка: '+d.checked+'/'+d.total+' (закрыто: '+d.closed+')','wait');
+        pollCheck();}}
+    }}).catch(function(){{pollCheck();}});
+  }},2500);}}
+
+// ── Export configurator ──
+var EX_DEF={{fields:['id','name','company','salary','score','rank','status','v2_status','matched'],filters:{{statuses:['new','interested'],min_salary:0,min_score:0,probability_band:'',limit:0}},sort:'rank'}};
+
+function exCfg(){{
+  try{{var c=JSON.parse(localStorage.getItem('ex_cfg'));return c||JSON.parse(JSON.stringify(EX_DEF));}}
+  catch(e){{return JSON.parse(JSON.stringify(EX_DEF));}}}}
+
+function exSumText(c){{
+  var f=(c.fields||[]).length;
+  var st=((c.filters||{{}}).statuses||[]).join(', ')||'—';
+  var lim=(c.filters||{{}}).limit||0;
+  return 'Поля: '+f+'/10 · '+st+(lim>0?' · Лимит: '+lim:'');}}
+
+function onExportPresetChange(val){{
+  var row=document.getElementById('sb-cfg-row');
+  var sm=document.getElementById('ex-sum');
+  if(val==='custom'){{
+    if(row)row.style.display='';
+    if(sm)sm.textContent=exSumText(exCfg());
+  }}else{{
+    if(row)row.style.display='none';
+    if(sm)sm.textContent='';
+  }}}}
+
+function exModalOpen(){{
+  var c=exCfg();
+  document.querySelectorAll('#ex-fields input').forEach(function(el){{el.checked=(c.fields||[]).indexOf(el.value)!==-1;}});
+  document.querySelectorAll('#ex-statuses input').forEach(function(el){{el.checked=((c.filters||{{}}).statuses||[]).indexOf(el.value)!==-1;}});
+  var fil=c.filters||{{}};
+  document.getElementById('ex-min-salary').value=fil.min_salary||0;
+  document.getElementById('ex-min-score').value=fil.min_score||0;
+  document.getElementById('ex-prob-band').value=fil.probability_band||'';
+  document.getElementById('ex-limit').value=fil.limit||0;
+  document.getElementById('ex-sort').value=c.sort||'rank';
+  document.getElementById('ex-modal').showModal();}}
+
+function exModalClose(){{document.getElementById('ex-modal').close();}}
+
+function exReadForm(){{
+  var fields=[];
+  document.querySelectorAll('#ex-fields input:checked').forEach(function(el){{fields.push(el.value);}});
+  var statuses=[];
+  document.querySelectorAll('#ex-statuses input:checked').forEach(function(el){{statuses.push(el.value);}});
+  return {{fields:fields,filters:{{statuses:statuses,min_salary:parseInt(document.getElementById('ex-min-salary').value)||0,min_score:parseInt(document.getElementById('ex-min-score').value)||0,probability_band:document.getElementById('ex-prob-band').value||'',limit:parseInt(document.getElementById('ex-limit').value)||0}},sort:document.getElementById('ex-sort').value||'rank'}};}}
+
+function exSave(){{
+  var c=exReadForm();
+  if(!c.fields.length){{alert('Выбери хотя бы одно поле.');return;}}
+  if(!c.filters.statuses.length){{alert('Выбери хотя бы один статус.');return;}}
+  try{{localStorage.setItem('ex_cfg',JSON.stringify(c));}}catch(e){{}}
+  var sm=document.getElementById('ex-sum');if(sm)sm.textContent=exSumText(c);
+  exModalClose();}}
+
+function exReset(){{
+  var d=EX_DEF;
+  document.querySelectorAll('#ex-fields input').forEach(function(el){{el.checked=d.fields.indexOf(el.value)!==-1;}});
+  document.querySelectorAll('#ex-statuses input').forEach(function(el){{el.checked=d.filters.statuses.indexOf(el.value)!==-1;}});
+  document.getElementById('ex-min-salary').value=0;
+  document.getElementById('ex-min-score').value=0;
+  document.getElementById('ex-prob-band').value='';
+  document.getElementById('ex-limit').value=0;
+  document.getElementById('ex-sort').value='rank';}}
+
+function apiExportRun(){{
+  if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
+  var preset=(document.getElementById('sb-export-sel')||{{}}).value||'unprocessed';
   tbBusy(true);tbMsg('Экспортирую…','wait');
-  fetch('/api/export?mode='+encodeURIComponent(mode)).then(function(r){{return r.json();}}).then(function(d){{
-    tbBusy(false);
-    if(d.ok){{tbMsg('✓ vacancies.json ('+mode+') сохранён');}}
-    else{{tbMsg('Ошибка: '+(d.msg||''),'err');}}
-  }}).catch(function(e){{tbBusy(false);tbMsg('Нет связи. ('+e+')','err');}});}}
+  if(preset==='custom'){{
+    var cfg=exCfg();cfg.mode='custom';
+    fetch('/api/export',{{method:'POST',headers:{{'Content-Type':'application/json'}},body:JSON.stringify(cfg)}})
+      .then(function(r){{return r.json();}}).then(function(d){{
+        tbBusy(false);
+        if(d.ok){{tbMsg('✓ vacancies.json (кастомный) сохранён');}}
+        else{{tbMsg('Ошибка: '+(d.msg||''),'err');}}
+      }}).catch(function(e){{tbBusy(false);tbMsg('Нет связи. ('+e+')','err');}});
+  }}else{{
+    fetch('/api/export?mode='+encodeURIComponent(preset))
+      .then(function(r){{return r.json();}}).then(function(d){{
+        tbBusy(false);
+        if(d.ok){{tbMsg('✓ vacancies.json ('+preset+') сохранён');}}
+        else{{tbMsg('Ошибка: '+(d.msg||''),'err');}}
+      }}).catch(function(e){{tbBusy(false);tbMsg('Нет связи. ('+e+')','err');}});}}}}
+
+function initExport(){{
+  var ep=document.getElementById('sb-export-sel');
+  onExportPresetChange(ep?ep.value:'unprocessed');}}
 
 function setStatus(vid,status){{
   if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
@@ -914,62 +1224,6 @@ function setStatus(vid,status){{
       }}else{{tbMsg('Ошибка: '+(d.msg||''),'err');}}
     }}).catch(function(e){{tbMsg('Нет связи: '+e,'err');}});}}
 
-// ── Background update ──
-function apiUpdateBg(){{
-  if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
-  fetch('/api/update-bg').then(function(r){{return r.json();}}).then(function(d){{
-    if(!d.ok){{tbMsg(d.msg||'Ошибка','err');return;}}
-    tbBusy(true);tbMsg('Запущено в фоне…','wait');
-    pollBg();
-  }}).catch(function(e){{tbMsg('Нет связи','err');}});}}
-
-var _bgTimer=null;
-function pollBg(){{
-  _bgTimer=setTimeout(function(){{
-    fetch('/api/progress').then(function(r){{return r.json();}}).then(function(d){{
-      var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
-      if(d.done){{
-        tbBusy(false);
-        if(d.ok){{tbMsg('Готово: '+steps+'. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
-        else{{tbMsg('Ошибка: '+steps,'err');}}
-      }}else{{
-        var cur=d.current?d.current+'…':'';
-        tbMsg((steps?steps+' → ':'')+cur,'wait');
-        pollBg();}}
-    }}).catch(function(){{pollBg();}});
-  }},2000);}}
-
-// ── Check closed ──
-function apiCheckClosed(){{
-  if(location.protocol==='file:'){{tbMsg('Открой через start.bat.','err');return;}}
-  var btn=document.getElementById('btn-check');
-  fetch('/api/check-closed').then(function(r){{return r.json();}}).then(function(d){{
-    if(!d.ok){{tbMsg(d.msg||'Ошибка','err');return;}}
-    if(btn)btn.disabled=true;
-    tbMsg('Проверяю закрытые вакансии…','wait');
-    pollCheck();
-  }}).catch(function(e){{tbMsg('Нет связи','err');}});}}
-
-var _checkTimer=null;
-function pollCheck(){{
-  _checkTimer=setTimeout(function(){{
-    fetch('/api/check-progress').then(function(r){{return r.json();}}).then(function(d){{
-      if(d.done){{
-        var btn=document.getElementById('btn-check');if(btn)btn.disabled=false;
-        if(d.ok){{
-          if(d.closed>0){{
-            tbMsg('Закрыто '+d.closed+' из '+d.total+'. Перезагружаю…');
-            setTimeout(function(){{location.reload();}},1200);
-          }}else{{
-            tbMsg('✓ Все открыты: проверено '+d.total+' вакансий.');
-          }}
-        }}else{{tbMsg('Ошибка проверки: '+(d.current||''),'err');}}
-      }}else{{
-        tbMsg('Проверка: '+d.checked+'/'+d.total+' (закрыто: '+d.closed+')','wait');
-        pollCheck();}}
-    }}).catch(function(){{pollCheck();}});
-  }},2500);}}
-
 // ── Theme ──
 function toggleTheme(){{
   var light=document.documentElement.classList.toggle('light');
@@ -988,7 +1242,7 @@ function initTheme(){{
 function resumePolling(){{
   fetch('/api/progress').then(function(r){{return r.json();}}).then(function(d){{
     if(d.running){{
-      tbBusy(true);
+      tbBusy(true);setUpdateBtn(true);
       var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
       tbMsg((steps?steps+' → ':'')+( d.current?d.current+'…':'' ),'wait');
       pollBg();
@@ -996,7 +1250,7 @@ function resumePolling(){{
   }}).catch(function(){{}});
   fetch('/api/check-progress').then(function(r){{return r.json();}}).then(function(d){{
     if(d.running){{
-      var btn=document.getElementById('btn-check');if(btn)btn.disabled=true;
+      setUpdateBtn(true);
       tbMsg('Проверка: '+d.checked+'/'+d.total+' (закрыто: '+d.closed+')','wait');
       pollCheck();
     }}
@@ -1010,6 +1264,7 @@ document.addEventListener('DOMContentLoaded',function(){{
   initCompact();
   initSort();
   initTheme();
+  initExport();
   var ff=document.getElementById('fouc-fix');if(ff)ff.remove();
   apply();
   resumePolling();}});
