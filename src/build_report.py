@@ -364,8 +364,8 @@ def main():
         return f'      <button{cls} data-k="{k}" data-v="{v}" onclick="flt(this)">{label} <span class="cnt">{cnt_val}</span></button>'
 
     status_btns = "\n".join([
-        sb("status", "all",        "все",          total,             active=True),
-        sb("status", "new",        "новые",         stc["new"]),
+        sb("status", "all",        "все",          total),
+        sb("status", "new",        "новые",         stc["new"],        active=True),
         sb("status", "interested", "интересно",     stc["interested"]),
         sb("status", "applied",    "откликнулся",   stc["applied"]),
         sb("status", "interview",  "собес",         stc["interview"]),
@@ -534,7 +534,7 @@ main{{padding:16px 20px}}
 /* ── CARDS ── */
 .card{{background:#161a22;border:1px solid #262b36;border-left:4px solid #555;border-radius:10px;padding:13px 15px;margin-bottom:11px;transition:opacity 0.15s}}
 .card.green{{border-left-color:#37b24d}} .card.yellow{{border-left-color:#f59f00}} .card.orange{{border-left-color:#f76707}} .card.red{{border-left-color:#e03131;opacity:.8}}
-.card.wppri{{border-left-color:#7048e8;box-shadow:inset 3px 0 0 #7048e8}}
+.card.wppri{{border-left-color:#7048e8}}
 .flags{{margin-top:4px;display:flex;gap:4px;flex-wrap:wrap}}
 .flag{{font-size:11px;padding:2px 7px;border-radius:10px}}
 .flag.wp{{background:#241a45;color:#b197fc}} .flag.en{{background:#0f3038;color:#66d9e8}}
@@ -736,34 +736,34 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
   <div class="ex-body">
     <div class="ex-sec-lbl">Поля в выгрузке</div>
     <div class="ex-grid" id="ex-fields">
-      <label class="ex-chk"><input type="checkbox" value="id" checked> id</label>
-      <label class="ex-chk"><input type="checkbox" value="name" checked> name</label>
-      <label class="ex-chk"><input type="checkbox" value="company" checked> company</label>
-      <label class="ex-chk"><input type="checkbox" value="salary" checked> salary</label>
-      <label class="ex-chk"><input type="checkbox" value="score" checked> score</label>
-      <label class="ex-chk"><input type="checkbox" value="rank" checked> rank</label>
-      <label class="ex-chk"><input type="checkbox" value="status" checked> status</label>
-      <label class="ex-chk"><input type="checkbox" value="v2_status" checked> v2_status</label>
-      <label class="ex-chk"><input type="checkbox" value="matched" checked> matched</label>
-      <label class="ex-chk"><input type="checkbox" value="description"> description</label>
+      <label class="ex-chk"><input type="checkbox" value="id" checked> ID</label>
+      <label class="ex-chk"><input type="checkbox" value="name" checked> Название</label>
+      <label class="ex-chk"><input type="checkbox" value="company" checked> Компания</label>
+      <label class="ex-chk"><input type="checkbox" value="salary" checked> Зарплата</label>
+      <label class="ex-chk"><input type="checkbox" value="score" checked> Балл</label>
+      <label class="ex-chk"><input type="checkbox" value="rank" checked> Ранк</label>
+      <label class="ex-chk"><input type="checkbox" value="status" checked> Статус</label>
+      <label class="ex-chk"><input type="checkbox" value="v2_status" checked> Оценка Claude</label>
+      <label class="ex-chk"><input type="checkbox" value="matched" checked> Совпадения</label>
+      <label class="ex-chk"><input type="checkbox" value="description" checked> Описание</label>
     </div>
     <hr class="ex-hr">
     <div class="ex-sec-lbl">Статусы вакансий</div>
     <div class="ex-stat-grid" id="ex-statuses">
-      <label class="ex-chk"><input type="checkbox" value="new" checked> new</label>
-      <label class="ex-chk"><input type="checkbox" value="interested" checked> interested</label>
-      <label class="ex-chk"><input type="checkbox" value="applied"> applied</label>
-      <label class="ex-chk"><input type="checkbox" value="interview"> interview</label>
-      <label class="ex-chk"><input type="checkbox" value="offer"> offer</label>
-      <label class="ex-chk"><input type="checkbox" value="rejected"> rejected</label>
-      <label class="ex-chk"><input type="checkbox" value="skipped"> skipped</label>
-      <label class="ex-chk"><input type="checkbox" value="archived"> archived</label>
+      <label class="ex-chk"><input type="checkbox" value="new" checked> Новые</label>
+      <label class="ex-chk"><input type="checkbox" value="interested" checked> Интересно</label>
+      <label class="ex-chk"><input type="checkbox" value="applied"> Откликнулся</label>
+      <label class="ex-chk"><input type="checkbox" value="interview"> Собеседование</label>
+      <label class="ex-chk"><input type="checkbox" value="offer"> Оффер</label>
+      <label class="ex-chk"><input type="checkbox" value="rejected"> Отказ</label>
+      <label class="ex-chk"><input type="checkbox" value="skipped"> Пропущена</label>
+      <label class="ex-chk"><input type="checkbox" value="archived"> Закрыта</label>
     </div>
     <hr class="ex-hr">
     <div class="ex-fields-row">
       <div><div class="ex-field-lbl">Мин. зарплата</div><input class="ex-inp" type="number" id="ex-min-salary" min="0" value="0" placeholder="0 = без фильтра"></div>
       <div><div class="ex-field-lbl">Мин. рейтинг</div><input class="ex-inp" type="number" id="ex-min-score" min="0" value="0" placeholder="0 = без фильтра"></div>
-      <div><div class="ex-field-lbl">Лимит строк</div><input class="ex-inp" type="number" id="ex-limit" min="0" value="0" placeholder="0 = без лимита"></div>
+      <div><div class="ex-field-lbl">Лимит вакансий</div><input class="ex-inp" type="number" id="ex-limit" min="0" value="0" placeholder="0 = без лимита"></div>
     </div>
     <div class="ex-fields-row ex-fields-row-2">
       <div><div class="ex-field-lbl">Вероятность</div>
@@ -776,9 +776,9 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
       </div>
       <div><div class="ex-field-lbl">Сортировка</div>
         <select class="ex-rsel" id="ex-sort">
-          <option value="rank">По рангу</option>
-          <option value="score">По рейтингу</option>
-          <option value="date">По дате</option>
+          <option value="rank">По рейтингу</option>
+          <option value="pub">По дате публикации</option>
+          <option value="added">По дате добавления</option>
         </select>
       </div>
     </div>
@@ -863,7 +863,7 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
 <script>
 // ── State ──
 var DIMS = ['band','status','wp','rev','fresh'];
-var F = {{band:'all',status:'all',wp:'all',rev:'all',fresh:'all'}};
+var F = {{band:'all',status:'new',wp:'all',rev:'all',fresh:'all'}};
 var CARDS = [];
 var ORIGINAL_ORDER = null;
 
@@ -1101,7 +1101,7 @@ function pollCheck(){{
   }},2500);}}
 
 // ── Export configurator ──
-var EX_DEF={{fields:['id','name','company','salary','score','rank','status','v2_status','matched'],filters:{{statuses:['new','interested'],min_salary:0,min_score:0,probability_band:'',limit:0}},sort:'rank'}};
+var EX_DEF={{fields:['id','name','company','salary','score','rank','status','v2_status','matched','description'],filters:{{statuses:['new','interested'],min_salary:0,min_score:0,probability_band:'',limit:0}},sort:'rank'}};
 
 function exCfg(){{
   try{{var c=JSON.parse(localStorage.getItem('ex_cfg'));return c||JSON.parse(JSON.stringify(EX_DEF));}}
@@ -1267,7 +1267,12 @@ document.addEventListener('DOMContentLoaded',function(){{
   initExport();
   var ff=document.getElementById('fouc-fix');if(ff)ff.remove();
   apply();
-  resumePolling();}});
+  resumePolling();
+  var exModal=document.getElementById('ex-modal');
+  if(exModal)exModal.addEventListener('click',function(e){{
+    var r=this.getBoundingClientRect();
+    if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)this.close();
+  }});}});
 </script></body></html>"""
 
     with io.open(REPORT, "w", encoding="utf-8") as f:

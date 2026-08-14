@@ -27,7 +27,15 @@ FUNNEL = ("interested", "applied", "interview", "offer", "rejected")
 
 # поля экспорта: id/score/rank/status/v2_status/name/company/salary/matched/description
 ALL_FIELDS = ("id", "score", "rank", "status", "v2_status", "name", "company", "salary", "matched", "description")
-DEFAULT_FIELDS = ("id", "score", "rank", "status", "v2_status", "name", "company", "salary", "matched")
+DEFAULT_FIELDS = ("id", "score", "rank", "status", "v2_status", "name", "company", "salary", "matched", "description")
+
+# облегчённые наборы полей для каждого пресета
+PRESET_FIELDS = {
+    "unprocessed":    ("id", "name", "company", "salary", "description"),
+    "new_interested": ("id", "name", "company", "salary", "score", "v2_status", "matched", "description"),
+    "funnel":         ("id", "name", "company", "salary", "status", "description"),
+    "visible":        None,  # все поля
+}
 
 
 def visible(v):
@@ -147,10 +155,10 @@ def export_custom(cfg):
     items = dedupe(select_custom(store, cfg))
 
     sort_by = cfg.get("sort") or "rank"
-    if sort_by == "score":
-        items.sort(key=lambda v: -(v.get("score") or 0))
-    elif sort_by == "date":
+    if sort_by == "pub":
         items.sort(key=lambda v: str(v.get("published_at") or ""), reverse=True)
+    elif sort_by == "added":
+        items.sort(key=lambda v: str(v.get("first_seen") or ""), reverse=True)
     else:
         def _rank_key(v):
             try:
@@ -183,6 +191,9 @@ def export(mode="visible"):
     items.sort(key=lambda v: -((v.get("final_rank") or v.get("probability", 0) or 0)
                                * br.freshness_info(v)[2]))
     out = [slim(v) for v in items]
+    fields = PRESET_FIELDS.get(mode)
+    if fields:
+        out = apply_field_mask(out, fields)
     with io.open(OUT, "w", encoding="utf-8") as f:
         f.write("[\n")
         for i, v in enumerate(out):
