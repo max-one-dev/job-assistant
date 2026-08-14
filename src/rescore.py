@@ -19,6 +19,61 @@ CONFIG = os.path.join(ROOT, "config.json")
 STORE = os.path.join(ROOT, "data", "store.json")
 
 
+def dedup_new_vacancies(store):
+    """Ставит статус skipped дублям new-вакансий (одинаковые name+company).
+    Использует точно ту же логику видимости и приоритета что build_report.py,
+    поэтому счётчик check_closed совпадает с тем что видно в отчёте.
+    Возвращает кол-во пропущенных дублей."""
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone(timedelta(hours=3))).isoformat(timespec="seconds")
+
+    SHORTLIST = {"interested", "applied", "interview", "offer"}
+
+    def visible(v):
+        s = v.get("status", "new")
+        if s == "archived": return False
+        if s in SHORTLIST or s == "rejected": return True
+        if v.get("non_dev") or v.get("one_off"): return False
+        if v.get("is_wordpress") and v.get("other_cms"): return False
+        if v.get("project_employment"): return True
+        return v.get("probability", 0) >= 50
+
+    def rep_rank(v):
+        s = v.get("status", "new")
+        return (
+            1 if s in SHORTLIST else 0,   # воронка всегда выигрывает
+            1 if v.get("letter") else 0,  # письмо важнее
+            v.get("probability", 0),
+            1 if s == "new" else 0,       # new бьёт skipped при равном prob
+        )
+
+    visible_list = [v for v in store.values() if visible(v)]
+
+    best = {}
+    for v in visible_list:
+        k = ((v.get("name") or "").strip().lower(),
+             (v.get("company") or "").strip().lower())
+        if k not in best or rep_rank(v) > rep_rank(best[k]):
+            best[k] = v
+
+    shown_ids = {v["id"] for v in best.values()}
+
+    skipped = 0
+    for v in visible_list:
+        if v.get("status") == "new" and v["id"] not in shown_ids:
+            k = ((v.get("name") or "").strip().lower(),
+                 (v.get("company") or "").strip().lower())
+            winner = best.get(k)
+            winner_name = (winner.get("name") or "")[:35] if winner else "?"
+            v["status"] = "skipped"
+            v.setdefault("history", []).append({
+                "date": now,
+                "event": f"Пропущена авто: дубль ({winner_name})"
+            })
+            skipped += 1
+    return skipped
+
+
 def main():
     with io.open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
@@ -56,6 +111,8 @@ def main():
         if old_band != band:
             band_changes += 1
 
+    n_dupes = dedup_new_vacancies(store)
+
     with io.open(STORE, "w", encoding="utf-8") as f:
         json.dump(store, f, ensure_ascii=False, indent=1)
 
@@ -68,6 +125,8 @@ def main():
     cats = _C(v.get("category") for v in store.values())
     print(f"  band changed: {band_changes} | v2 reject-type: {proj_hits} | WordPress roles: {wp_count}")
     print(f"  categories: A {cats['A']} · B {cats['B']} · C {cats['C']}")
+    if n_dupes:
+        print(f"  dupes skipped: {n_dupes}")
 
 
 if __name__ == "__main__":
