@@ -55,6 +55,28 @@ Target salary:
 
 [TARGET_SALARY] RUB
 
+## Agent Rules — Files & Testing
+
+### Temporary files — ЕДИНСТВЕННАЯ папка: `tmp/`
+- **Все** временные файлы агента (скриншоты, снапшоты, промежуточные данные, отладочные дампы) сохраняются **только** в папку `tmp/` в корне проекта.
+- Использовать пути вида `tmp/screenshot.png`, никогда не сохранять временные файлы напрямую в корень или любую другую папку.
+- Папка `tmp/` находится в `.gitignore` — в git она не попадает.
+- Не создавать других временных папок (`screenshots/`, `test-output/`, `.cache/` и т.д.).
+- `.playwright-mcp/` создаётся Playwright автоматически — не использовать её для своих файлов.
+
+### .example files
+- Whenever a config file that has a matching `.example` counterpart is changed, update the `.example` file too.
+- `.example` files must be fully anonymized: no real salaries, company names, personal data, or identifying details.
+- If a new config file is added that would normally be gitignored, create an anonymized `.example` alongside it.
+
+### README.md
+- When adding a new feature or changing existing functionality, always update `README.md` in the same session.
+- README must stay in sync with the actual behavior of the tool — outdated docs are treated as a bug.
+
+### Git operations
+- Never run `git init`, `git commit`, or `git push` without an explicit request from the user.
+- The user handles all git operations himself.
+
 ## Absolute Rules
 
 Never invent experience.

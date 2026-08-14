@@ -50,5 +50,9 @@ Thumbs.db
 desktop.ini
 .idea/
 .vscode/
-.playwright-mcp/
 templates/
+
+# Единственная папка для всех временных файлов
+tmp/
+# Playwright MCP создаёт автоматически (снапшоты, логи)
+.playwright-mcp/
