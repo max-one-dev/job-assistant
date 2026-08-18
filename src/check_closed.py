@@ -16,7 +16,7 @@
 """
 import io, json, os, sys, time, queue, threading
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from utils import write_json_atomic
+from utils import write_json_atomic, backup_store
 import urllib.request, urllib.error
 import html as html_mod
 from datetime import datetime, timezone, timedelta
@@ -192,6 +192,7 @@ def main(progress_cb=None):
             closed += 1
 
     if closed > 0:
+        backup_store(STORE)
         _write_json(STORE, store)
         import subprocess
         build = os.path.join(HERE, "build_report.py")

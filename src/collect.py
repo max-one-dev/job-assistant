@@ -10,7 +10,7 @@ No official API, no auth, no auto-apply. Personal use only.
 """
 import json, re, html, time, io, os, sys, urllib.parse, urllib.request, urllib.error
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from utils import write_json_atomic
+from utils import write_json_atomic, backup_store
 from datetime import datetime, timezone, timedelta
 
 MSK = timezone(timedelta(hours=3))
@@ -427,13 +427,16 @@ TOPIC_RULES = [
 
 def review_topics(vac, limit=5):
     hay = _hay(vac)
+    seen = set()
     topics = []
     for keys, topic in TOPIC_RULES:
-        if any(term_present(k, hay) for k in keys) and topic not in topics:
-            topics.append(topic)
-        if len(topics) >= limit:
-            break
-    return topics
+        if any(term_present(k, hay) for k in keys) and topic not in seen:
+            seen.add(topic)
+            required = any(_mandatory(k, hay) for k in keys)
+            topics.append({"topic": topic, "required": required})
+    # Required topics first, then optional; cap at limit
+    topics.sort(key=lambda t: not t["required"])
+    return topics[:limit]
 
 
 # ================= Career Assistant v2 scoring =================
@@ -730,6 +733,7 @@ def main():
         log(f"  {'+' if accessible else '!'} {vid}: {prob:>3}%  {bnd}")
         time.sleep(delay)
 
+    backup_store(STORE)
     write_json(STORE, store)
     log(f"\nDone. +{added} new. store.json now holds {len(store)} vacancies.")
 

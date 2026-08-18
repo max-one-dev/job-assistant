@@ -1,6 +1,24 @@
 # -*- coding: utf-8 -*-
 """Shared utilities for the Job Assistant pipeline."""
-import json, os, tempfile
+import json, os, tempfile, shutil
+
+
+def backup_store(store_path, keep=5):
+    """Copy store.json to data/backups/ with a timestamp, keep last `keep` copies."""
+    if not os.path.exists(store_path):
+        return
+    from datetime import datetime
+    backups_dir = os.path.join(os.path.dirname(os.path.abspath(store_path)), "backups")
+    os.makedirs(backups_dir, exist_ok=True)
+    ts = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    shutil.copy2(store_path, os.path.join(backups_dir, f"store-{ts}.json"))
+    files = sorted(f for f in os.listdir(backups_dir)
+                   if f.startswith("store-") and f.endswith(".json"))
+    for old in files[:-keep]:
+        try:
+            os.unlink(os.path.join(backups_dir, old))
+        except OSError:
+            pass
 
 
 def write_json_atomic(path, obj, indent=2):

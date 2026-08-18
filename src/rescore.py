@@ -12,7 +12,7 @@ Run after changing config.json or the scoring rules:
 """
 import json, io, os
 import collect  # same dir; reuses score_vacancy / band_of / etc.
-from utils import write_json_atomic
+from utils import write_json_atomic, backup_store
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -67,6 +67,7 @@ def dedup_new_vacancies(store):
             winner = best.get(k)
             winner_name = (winner.get("name") or "")[:35] if winner else "?"
             v["status"] = "skipped"
+            v["duplicate_of"] = str(winner["id"]) if winner else None
             v.setdefault("history", []).append({
                 "date": now,
                 "event": f"Пропущена авто: дубль ({winner_name})"
@@ -76,6 +77,7 @@ def dedup_new_vacancies(store):
 
 
 def main():
+    backup_store(STORE)
     with io.open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
     with io.open(STORE, encoding="utf-8") as f:
