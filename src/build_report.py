@@ -179,8 +179,18 @@ def card(v):
 
     topics_html = ""
     if topics:
-        lis = "".join(f"<li>{e(t)}</li>" for t in topics)
-        topics_html = f'<div class="topics"><b>📚 Повторить перед интервью:</b><ul>{lis}</ul></div>'
+        req, opt = [], []
+        for t in topics:
+            if isinstance(t, dict):
+                (req if t.get("required") else opt).append(t.get("topic", ""))
+            else:
+                opt.append(str(t))
+        inner = ""
+        if req:
+            inner += "<div class='topics-grp'><span class='topics-lbl req'>⚠ Обязательно:</span><ul>" + "".join(f"<li>{e(t)}</li>" for t in req) + "</ul></div>"
+        if opt:
+            inner += "<div class='topics-grp'><span class='topics-lbl opt'>+ Желательно:</span><ul>" + "".join(f"<li>{e(t)}</li>" for t in opt) + "</ul></div>"
+        topics_html = f'<div class="topics"><b>📚 Повторить перед интервью:</b>{inner}</div>'
 
     accessible = v.get("accessible", True)
     warn_html = "" if accessible else (
@@ -331,7 +341,7 @@ def main():
         return (1 if v.get("status") in SHORTLIST else 0,
                 1 if v.get("letter") else 0,
                 v.get("probability", 0))
-    # Archived не участвуют в дедупликации — они только рендерятся отдельно
+    # Archived не участвуют в дедупликации — они рендерятся в отдельной секции
     dedup_list = [v for v in visible_list if v.get("status") != "archived"]
     best = {}
     for v in dedup_list:
@@ -339,17 +349,20 @@ def main():
         if k not in best or rep_rank(v) > rep_rank(best[k]):
             best[k] = v
     shown_deduped = list(best.values())
-    archived_shown = [v for v in visible_list if v.get("status") == "archived"]
-    shown = shown_deduped + archived_shown
+    archived_shown = sorted(
+        [v for v in visible_list if v.get("status") == "archived"],
+        key=lambda v: str(v.get("last_seen") or ""), reverse=True
+    )
     n_dupes = len(dedup_list) - len(shown_deduped)
-    hidden0 = len(store) - len(shown)
+    hidden0 = len(store) - len(shown_deduped) - len(archived_shown)
     n_unreviewed = sum(1 for v in shown_deduped if v["id"] not in REVIEWED)
 
     def sort_rank(v):
         base = v.get("final_rank", v.get("probability", 0)) or 0
         return base * freshness_info(v)[2]
 
-    items = sorted(shown, key=lambda v: (tier(v), -sort_rank(v)))
+    items = sorted(shown_deduped, key=lambda v: (tier(v), -sort_rank(v)))
+    n_archived = len(archived_shown)
     cnt = {b: sum(1 for v in items if v.get("band") == b) for b in BAND_INFO}
     n_letters = sum(1 for v in items if v.get("letter"))
     n_wp = sum(1 for v in items if is_wp_priority(v))
@@ -359,6 +372,7 @@ def main():
     stc = Counter(v.get("status", "new") for v in items)
     frc = Counter(freshness_info(v)[1] for v in items)
     cards = "\n".join(card(v) for v in items)
+    archived_cards = "\n".join(card(v) for v in archived_shown)
 
     def sb(k, v, label, cnt_val, active=False):
         cls = ' class="active"' if active else ''
@@ -373,7 +387,7 @@ def main():
         sb("status", "offer",      "оффер",         stc["offer"]),
         sb("status", "rejected",   "отказ",         stc["rejected"]),
         sb("status", "skipped",    "пропущ.",       stc["skipped"]),
-        sb("status", "archived",   "Закрыта",       stc["archived"]),
+        sb("status", "archived",   "Закрыта",       n_archived),
     ])
     rev_btns = "\n".join([
         sb("rev", "all", "все",         total,        active=True),
@@ -561,7 +575,13 @@ main{{padding:16px 20px}}
 .tag.good{{background:#173a24;color:#69db7c}} .tag.bad{{background:#3a1717;color:#ff8787}}
 .tag.warn2{{background:#3a2f12;color:#ffd8a8;font-style:italic}}
 .topics{{margin-top:10px;background:#12233a;border:1px solid #24405f;border-radius:8px;padding:8px 12px;font-size:13px}}
-.topics b{{color:#9ec5ff}} .topics ul{{margin:6px 0 2px;padding-left:20px}} .topics li{{margin:2px 0;color:#cbd5e1}}
+.topics b{{color:#9ec5ff}} .topics ul{{margin:3px 0 2px;padding-left:20px}} .topics li{{margin:2px 0;color:#cbd5e1}}
+.topics-grp{{margin-top:4px}} .topics-lbl{{font-size:11px;font-weight:600;display:block;margin-bottom:1px}}
+.topics-lbl.req{{color:#ffa94d}} .topics-lbl.opt{{color:#74c0fc}}
+.archived-sec{{margin-top:20px;border-top:1px solid #262b36;padding-top:4px}}
+.archived-sum{{cursor:pointer;color:#6b7480;font-size:13px;padding:8px 4px;display:flex;align-items:center;gap:8px;list-style:none;user-select:none}}
+.archived-sum:hover{{color:#9aa4b2}} .archived-sum::-webkit-details-marker{{display:none}}
+.archived-cnt{{background:#2d1a1a;color:#ff6b6b;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:600}}
 details{{margin-top:9px}} summary{{cursor:pointer;color:#9aa4b2;font-size:13px}}
 .skills{{color:#cbd5e1;font-size:13px;margin:6px 0}}
 .desc{{color:#c4ccd8;font-size:13px;white-space:pre-wrap;max-height:360px;overflow:auto;background:#12151b;padding:10px 14px;border-radius:6px}}
@@ -659,6 +679,10 @@ html.light .warn{{background:#fef9c3;border-color:#fbbf24;color:#92400e}}
 html.light .topics{{background:#eff6ff;border-color:#bfdbfe}}
 html.light .topics b{{color:#1d4ed8}}
 html.light .topics li{{color:#1e3a5f}}
+html.light .topics-lbl.req{{color:#ea580c}} html.light .topics-lbl.opt{{color:#1d4ed8}}
+html.light .archived-sec{{border-color:#e2e8f0}}
+html.light .archived-sum{{color:#9ca3af}} html.light .archived-sum:hover{{color:#374151}}
+html.light .archived-cnt{{background:#fee2e2;color:#b91c1c}}
 html.light .letter{{background:#f8fafc;border-color:#e2e8f0}}
 html.light .letter-head{{color:#4a5568}}
 html.light .letter pre{{color:#1a202c}}
@@ -856,6 +880,10 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
       <div id="active-tags"></div>
       <div id="nores" style="display:none">Ничего не найдено.</div>
       {cards}
+      {f'''<details id="archived-section" class="archived-sec">
+        <summary class="archived-sum">📁 Закрытые вакансии &nbsp;<span class="archived-cnt">{n_archived}</span></summary>
+        {archived_cards}
+      </details>''' if n_archived else '<div id="archived-section"></div>'}
     </main>
   </div>
 
@@ -866,6 +894,7 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
 var DIMS = ['band','status','wp','rev','fresh'];
 var F = {{band:'all',status:'new',wp:'all',rev:'all',fresh:'all'}};
 var CARDS = [];
+var ARCHIVED_CARDS = [];
 var ORIGINAL_ORDER = null;
 
 var DIM_NAMES = {{
@@ -886,10 +915,19 @@ function matchExcept(c,ex){{
 
 function apply(){{
   var shown=0;
-  CARDS.forEach(function(c){{var ok=matchExcept(c,null);c.style.display=ok?'':'none';if(ok)shown++;}});
+  var archSec=document.getElementById('archived-section');
+  if(F.status==='archived'){{
+    CARDS.forEach(function(c){{c.style.display='none';}});
+    if(archSec&&archSec.tagName==='DETAILS')archSec.open=true;
+    shown=ARCHIVED_CARDS.length;
+  }}else{{
+    CARDS.forEach(function(c){{var ok=matchExcept(c,null);c.style.display=ok?'':'none';if(ok)shown++;}});
+    if(archSec&&archSec.tagName==='DETAILS')archSec.open=false;
+  }}
   document.querySelectorAll('.sidebar button[data-k]').forEach(function(b){{
     var k=b.dataset.k,v=b.dataset.v,n=0;
-    CARDS.forEach(function(c){{if(matchExcept(c,k)&&(v==='all'||c.dataset[k]===v))n++;}});
+    if(k==='status'&&v==='archived'){{n=ARCHIVED_CARDS.length;}}
+    else{{CARDS.forEach(function(c){{if(matchExcept(c,k)&&(v==='all'||c.dataset[k]===v))n++;}});}}
     var el=b.querySelector('.cnt');if(el)el.textContent=n;}});
   var no=document.getElementById('nores');if(no)no.style.display=shown?'none':'';
   var sc=document.getElementById('shown-count');if(sc)sc.textContent=shown+' вакансий';
@@ -1268,7 +1306,8 @@ function resumePolling(){{
 
 // ── Init ──
 document.addEventListener('DOMContentLoaded',function(){{
-  CARDS=Array.prototype.slice.call(document.querySelectorAll('.card'));
+  CARDS=Array.prototype.slice.call(document.querySelectorAll('main > .card'));
+  ARCHIVED_CARDS=Array.prototype.slice.call(document.querySelectorAll('#archived-section .card'));
   ORIGINAL_ORDER=CARDS.slice();
   initSF();
   initCompact();
