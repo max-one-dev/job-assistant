@@ -2,8 +2,10 @@
 """
 Builds data/report.html from data/store.json (the persistent journal).
 """
-import json, io, os, html
+import json, io, os, html, sys
 from datetime import datetime, timezone, timedelta
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from utils import write_json_atomic
 
 MONTHS_RU = ["января", "февраля", "марта", "апреля", "мая", "июня", "июля",
              "августа", "сентября", "октября", "ноября", "декабря"]
@@ -302,8 +304,7 @@ def main():
             }
             _fb_changed = True
     if _fb_changed:
-        with io.open(FEEDBACK, "w", encoding="utf-8") as _ff:
-            json.dump(feedback, _ff, ensure_ascii=False, indent=2)
+        write_json_atomic(FEEDBACK, feedback)
     REVIEWED = set(feedback.keys())
 
     def visible(v):
@@ -581,7 +582,7 @@ details{{margin-top:9px}} summary{{cursor:pointer;color:#9aa4b2;font-size:13px}}
 .stn-applied{{border-color:#2e7d4f;color:#69db7c}} .stn-applied:hover{{background:#173a24}}
 .stn-interview{{border-color:#7048e8;color:#b197fc}} .stn-interview:hover{{background:#241a45}}
 .stn-rejected{{border-color:#7d1a1a;color:#ff8787}} .stn-rejected:hover{{background:#3d1a1a}}
-.stn-skip{{border-color:#444;color:#6b7480}} .stn-skip:hover{{background:#222629}}
+.stn-skip{{border-color:#444;color:#6b7480}} .stn-skip:hover{{background:#2a3040}}
 .stn-rev{{border-color:#1e4060;color:#74c0fc}} .stn-rev:hover{{background:#12304a}}
 .idtag{{margin-left:auto;color:#4a515e;font-size:11px}}
 
@@ -674,7 +675,7 @@ html.light .stn-rejected{{border-color:#ef4444;color:#991b1b}}
 html.light .stn-rejected:hover{{background:#fee2e2}}
 html.light .stn-interview{{border-color:#7c3aed;color:#5b21b6}}
 html.light .stn-interview:hover{{background:#ede9fe}}
-html.light .stn-skip{{border-color:#d1d5db;color:#6b7280}}
+html.light .stn-skip{{border-color:#d1d5db;color:#6b7280}} html.light .stn-skip:hover{{background:#f1f5f9;border-color:#9ca3af}}
 html.light .stn-rev{{border-color:#3b82f6;color:#1d4ed8}}
 html.light .stn-rev:hover{{background:#eff6ff}}
 html.light .idtag{{color:#9ca3af}}
@@ -1073,11 +1074,14 @@ function pollBg(){{
       var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
       if(d.done){{
         tbBusy(false);setUpdateBtn(false);
-        if(d.ok){{tbMsg('Готово: '+steps+'. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
-        else{{tbMsg('Ошибка: '+steps,'err');}}
+        if(d.ok){{tbMsg('✓ '+steps+'. Перезагружаю…');setTimeout(function(){{location.reload();}},1500);}}
+        else{{tbMsg('✗ Ошибка: '+steps,'err');}}
       }}else{{
         var cur=d.current?d.current+'…':'';
-        tbMsg((steps?steps+' → ':'')+cur,'wait');
+        var n=(d.step_idx!==undefined?d.step_idx:( (d.steps||[]).length))+1;
+        var tot=d.total||0;
+        var prog=tot?' ['+n+'/'+tot+']':'';
+        tbMsg((steps?steps+' → ':'')+cur+prog,'wait');
         pollBg();}}
     }}).catch(function(){{pollBg();}});
   }},2000);}}
@@ -1241,11 +1245,17 @@ function initTheme(){{
 // ── Resume polling after page reload ──
 function resumePolling(){{
   fetch('/api/progress').then(function(r){{return r.json();}}).then(function(d){{
+    var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
     if(d.running){{
       tbBusy(true);setUpdateBtn(true);
-      var steps=(d.steps||[]).map(function(s){{return s.name+(s.ok?'✓':'✗');}}).join(' → ');
-      tbMsg((steps?steps+' → ':'')+( d.current?d.current+'…':'' ),'wait');
+      var n=(d.step_idx!==undefined?d.step_idx:( (d.steps||[]).length))+1;
+      var tot=d.total||0;
+      var prog=tot?' ['+n+'/'+tot+']':'';
+      tbMsg((steps?steps+' → ':'')+( d.current?d.current+'…':'' )+prog,'wait');
       pollBg();
+    }}else if(d.done&&steps&&d.finished_at){{
+      var age=Math.floor(Date.now()/1000)-(d.finished_at||0);
+      if(age<120)tbMsg(d.ok?'✓ '+steps:'✗ '+steps,d.ok?'':'err');
     }}
   }}).catch(function(){{}});
   fetch('/api/check-progress').then(function(r){{return r.json();}}).then(function(d){{

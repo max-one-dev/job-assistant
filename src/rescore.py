@@ -12,6 +12,7 @@ Run after changing config.json or the scoring rules:
 """
 import json, io, os
 import collect  # same dir; reuses score_vacancy / band_of / etc.
+from utils import write_json_atomic
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
@@ -113,8 +114,7 @@ def main():
 
     n_dupes = dedup_new_vacancies(store)
 
-    with io.open(STORE, "w", encoding="utf-8") as f:
-        json.dump(store, f, ensure_ascii=False, indent=1)
+    write_json_atomic(STORE, store, indent=1)
 
     from collections import Counter
     bands = Counter(v.get("band") for v in store.values())

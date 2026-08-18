@@ -12,7 +12,9 @@ Endpoints (вызываются кнопками в отчёте через fetc
 
 Сервер локальный (127.0.0.1), наружу ничего не публикует.
 """
-import os, sys, io, json, subprocess, webbrowser, threading
+import os, sys, io, json, subprocess, webbrowser, threading, time
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from utils import write_json_atomic
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -40,7 +42,8 @@ def run_py(*args):
 
 # ── Background update state ──
 _bg_lock = threading.Lock()
-_bg_state = {"running": False, "steps": [], "current": "", "done": True, "ok": True}
+_bg_state = {"running": False, "steps": [], "current": "", "done": True, "ok": True,
+             "total": 0, "step_idx": 0, "finished_at": None}
 _bg_cancel = threading.Event()
 
 
@@ -48,22 +51,27 @@ def _bg_update():
     global _bg_state
     _bg_cancel.clear()
     pipeline = [
-        ("collect.py",         "сбор вакансий",    []),
-        ("rescore.py",         "пересчёт баллов",  []),
-        ("build_report.py",    "отчёт",            []),
-        ("export_vacancies.py","экспорт",           ["visible"]),
+        ("collect.py",         "сбор вакансий",     []),
+        ("check_closed.py",    "проверка закрытых", []),
+        ("rescore.py",         "пересчёт баллов",   []),
+        ("build_report.py",    "отчёт",             []),
+        ("export_vacancies.py","экспорт",            ["visible"]),
     ]
+    total = len(pipeline)
     with _bg_lock:
-        _bg_state = {"running": True, "steps": [], "current": pipeline[0][1], "done": False, "ok": None}
+        _bg_state = {"running": True, "steps": [], "current": pipeline[0][1], "done": False,
+                     "ok": None, "total": total, "step_idx": 0, "finished_at": None}
     ok = True
     steps = []
-    for script, label, args in pipeline:
+    for i, (script, label, args) in enumerate(pipeline):
         if _bg_cancel.is_set():
             with _bg_lock:
-                _bg_state.update({"running": False, "current": "", "done": True, "ok": False, "steps": steps[:]})
+                _bg_state.update({"running": False, "current": "", "done": True, "ok": False,
+                                   "steps": steps[:], "step_idx": i, "finished_at": time.time()})
             return
         with _bg_lock:
             _bg_state["current"] = label
+            _bg_state["step_idx"] = i
         ok, out = run_py(script, *args)
         steps.append({"name": label, "ok": ok})
         with _bg_lock:
@@ -71,7 +79,8 @@ def _bg_update():
         if not ok:
             break
     with _bg_lock:
-        _bg_state.update({"running": False, "current": "", "done": True, "ok": ok})
+        _bg_state.update({"running": False, "current": "", "done": True, "ok": ok,
+                          "step_idx": total, "finished_at": time.time()})
 
 
 # ── Check-closed state ──
@@ -210,8 +219,7 @@ class Handler(BaseHTTPRequestHandler):
                 fb[vid] = {"verdict": "reviewed", "reason": "manual_review",
                            "note": "Отмечено просмотренным вручную",
                            "date": str(date.today())}
-                with io.open(feedback_path, "w", encoding="utf-8") as f:
-                    json.dump(fb, f, ensure_ascii=False, indent=2)
+                write_json_atomic(feedback_path, fb)
                 run_py("build_report.py")
                 return self._json({"ok": True, "id": vid})
             except Exception as ex:
@@ -275,8 +283,7 @@ class Handler(BaseHTTPRequestHandler):
                 event = f"Статус: {LABEL.get(old, old)} → {LABEL.get(status, status)}"
                 store[vid]["status"] = status
                 store[vid].setdefault("history", []).append({"date": now, "event": event})
-                with io.open(store_path, "w", encoding="utf-8") as f:
-                    json.dump(store, f, ensure_ascii=False, indent=2)
+                write_json_atomic(store_path, store)
                 run_py("build_report.py")
                 return self._json({"ok": True, "id": vid, "status": status,
                                    "history_entry": {"date_fmt": date_fmt, "event": event}})

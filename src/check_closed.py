@@ -15,6 +15,8 @@
 Запуск: python src/check_closed.py
 """
 import io, json, os, sys, time, queue, threading
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from utils import write_json_atomic
 import urllib.request, urllib.error
 import html as html_mod
 from datetime import datetime, timezone, timedelta
@@ -46,8 +48,7 @@ def _read_json(path):
 
 
 def _write_json(path, obj):
-    with io.open(path, "w", encoding="utf-8") as f:
-        json.dump(obj, f, ensure_ascii=False, indent=2)
+    write_json_atomic(path, obj, indent=2)
 
 
 def fetch_page(vid):
