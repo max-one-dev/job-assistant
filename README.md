@@ -13,9 +13,8 @@
 
 ```
 Job Assistant/
-├── config.json              # настройки поиска, система баллов, зарплатные пороги
-├── config.json.example      # шаблон для новых пользователей (без личных данных)
-├── start.bat                # запуск локального сервера (двойной клик)
+├── config.json.example      # шаблон для новых пользователей
+├── start.bat                # запуск локального сервера
 ├── README.md
 ├── src/
 │   ├── collect.py           # парсинг hh.ru → merge в store.json + первичный скоринг
@@ -26,18 +25,17 @@ Job Assistant/
 │   └── check_closed.py      # проверка закрытых вакансий на hh.ru
 ├── data/
 │   ├── store.json           # ЕДИНЫЙ ЖУРНАЛ: вакансии + статус + история + письма
-│   ├── feedback.json        # пометки «просмотрено» (вручную и авто)
-│   ├── report.html          # итоговый отчёт (собирается автоматически)
+│   ├── feedback.json        # метки «просмотрено» (вручную и авто)
+│   ├── report.html          # итоговый отчёт
 │   ├── vacancies.json       # экспорт для внешнего использования
 │   ├── SCHEMA.md            # справочник по полям store.json
 │   └── logs/
 ├── resumes/
-│   └── *.txt / *.pdf        # профили резюме (в .gitignore, есть *.example-шаблоны)
-├── tmp/                     # временные файлы агента (в .gitignore)
+│   └── *.txt / *.pdf        # профили резюме
 └── .claude/
-    ├── CLAUDE.md            # правила для Claude (в .gitignore, есть .example)
-    ├── PROMPT.md            # системный промпт (в .gitignore, есть .example)
-    └── CAREER_ASSISTANT_V2.md  # методика оценки вакансий (в .gitignore, есть .example)
+    ├── CLAUDE.md            # правила для Claude
+    ├── PROMPT.md            # системный промпт 
+    └── CAREER_ASSISTANT_V2.md  # методика оценки вакансий
 ```
 
 ---

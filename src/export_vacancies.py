@@ -40,7 +40,7 @@ PRESET_FIELDS = {
 
 def visible(v):
     """Та же логика, что в build_report.main().visible()."""
-    if v.get("status") == "archived":
+    if v.get("status") in ("archived", "skipped"):
         return False
     if v.get("status") in br.SHORTLIST or v.get("status") == "rejected":
         return True
