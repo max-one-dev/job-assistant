@@ -5,9 +5,10 @@
 Проверяет все видимые вакансии: new / interested / applied / interview / offer.
 
 Детектирование — ТОЛЬКО через HH-Lux-InitialState JSON:
-  - vacancyView.approved == False      → вакансия снята с публикации
+  - vacancyView.approved == False           → вакансия снята с публикации
   - vacancyView.closedForApplicants == True → вакансия закрыта для откликов
-  - HTTP 404                           → вакансия удалена
+  - vacancyView.status.archived == True     → вакансия в архиве hh.ru
+  - HTTP 404                                → вакансия удалена
 Строковый поиск "vacancyInArchive" / "Вакансия в архиве" НЕ используется —
 эти строки присутствуют в JS-бандле на каждой странице hh.ru вне зависимости от статуса.
 
@@ -97,6 +98,8 @@ def is_closed(vid):
         return True, "approved=false"
     if vv.get("closedForApplicants") is True:
         return True, "closedForApplicants=true"
+    if (vv.get("status") or {}).get("archived") is True:
+        return True, "status.archived=true"
 
     return False, "ok"
 

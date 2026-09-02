@@ -166,7 +166,7 @@ export_vacancies.py [mode]
 check_closed.py
   ↓ проходит по всем видимым вакансиям (new/interested/applied/interview/offer)
   ↓ 3 параллельных воркера, пауза 2 сек между запросами каждого воркера
-  ↓ детектирует закрытие через HH-Lux-InitialState JSON: approved=false / closedForApplicants=true / HTTP 404
+  ↓ детектирует закрытие через HH-Lux-InitialState JSON: approved=false / closedForApplicants=true / status.archived=true / HTTP 404
   ↓ если закрыта — статус → archived, запись в history; пересобирает отчёт
 ```
 
