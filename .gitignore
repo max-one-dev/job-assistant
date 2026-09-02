@@ -7,6 +7,8 @@ data/store.json
 data/feedback.json
 data/strategy.md
 data/candidate_profile.md
+data/last_collect.json
+data/backups/
 
 # Генерируемые файлы (собираются из store.json)
 data/report.html

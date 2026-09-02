@@ -300,6 +300,7 @@ def main():
     REVIEWED = set(feedback.keys())
 
     store = read_json(STORE, {})
+    last_collect = read_json(os.path.join(DATA, "last_collect.json"), {})
 
 
     # Auto-mark applied/interview/offer vacancies as reviewed
@@ -340,7 +341,8 @@ def main():
     def rep_rank(v):
         return (1 if v.get("status") in SHORTLIST else 0,
                 1 if v.get("letter") else 0,
-                v.get("probability", 0))
+                v.get("probability", 0),
+                1 if v.get("status") == "new" else 0)
     # Archived не участвуют в дедупликации — они рендерятся в отдельной секции
     dedup_list = [v for v in visible_list if v.get("status") != "archived"]
     best = {}
@@ -367,6 +369,30 @@ def main():
     n_letters = sum(1 for v in items if v.get("letter"))
     n_wp = sum(1 for v in items if is_wp_priority(v))
     total = len(items)
+
+    _lc_added = last_collect.get("added", 0)
+    _lc_at = last_collect.get("at", "")
+    if _lc_at:
+        try:
+            from datetime import datetime, timezone, timedelta
+            _MSK = timezone(timedelta(hours=3))
+            _MONTHS = ["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"]
+            _dt = datetime.fromisoformat(_lc_at).astimezone(_MSK)
+            _lc_date = f"{_dt.day} {_MONTHS[_dt.month-1]}, {_dt.strftime('%H:%M')}"
+        except Exception:
+            _lc_date = _lc_at[:16]
+    else:
+        _lc_date = ""
+    _new_badge = (f' · <span style="color:#4ade80;font-weight:600">+{_lc_added} новых</span>'
+                  if _lc_added else "")
+    _update_note = (f'Обновлено {_lc_date}. '
+                    if _lc_date else "")
+    if _lc_added:
+        # Бэйдж "+N новых" относится к последнему запуску collect.py и должен
+        # показаться один раз. Иначе пересборка отчёта (/api/rebuild) без
+        # нового сбора будет бесконечно показывать старое число.
+        write_json_atomic(os.path.join(DATA, "last_collect.json"),
+                           {**last_collect, "added": 0})
     n_reviewed = total - n_unreviewed
     from collections import Counter
     stc = Counter(v.get("status", "new") for v in items)
@@ -748,8 +774,8 @@ html.light .ex-stat-grid .ex-chk{{color:#4b5563}}
       <option value="added">↕ По дате добавления</option>
     </select>
   </div>
-  <div class="sum">🟢 {cnt['green']} · 🟡 {cnt['yellow']} · 🟠 {cnt['orange']} · 🔴 {cnt['red']} · ✉️ {n_letters} · ⭐ {n_wp} · 👀 непросм: {n_unreviewed}
-    <br><small style="color:#555e6b">Скрыто {hidden0} (рейтинг &lt;50%, архив, дубли {n_dupes} и др.). Вероятность — эвристика, не гарантия.</small></div>
+  <div class="sum">🟢 {cnt['green']} · 🟡 {cnt['yellow']} · 🟠 {cnt['orange']} · 🔴 {cnt['red']} · ✉️ {n_letters} · ⭐ {n_wp} · 👀 непросм: {n_unreviewed}{_new_badge}
+    <br><small style="color:#555e6b">{_update_note}Скрыто {hidden0} (рейтинг &lt;50%, архив, дубли {n_dupes} и др.). Вероятность — эвристика, не гарантия.</small></div>
 </header>
 
 <!-- ═══ EXPORT CONFIGURATOR MODAL ═══ -->
@@ -918,11 +944,17 @@ function apply(){{
   var archSec=document.getElementById('archived-section');
   if(F.status==='archived'){{
     CARDS.forEach(function(c){{c.style.display='none';}});
-    if(archSec&&archSec.tagName==='DETAILS')archSec.open=true;
+    if(archSec){{archSec.style.display='';if(archSec.tagName==='DETAILS')archSec.open=true;}}
     shown=ARCHIVED_CARDS.length;
   }}else{{
     CARDS.forEach(function(c){{var ok=matchExcept(c,null);c.style.display=ok?'':'none';if(ok)shown++;}});
-    if(archSec&&archSec.tagName==='DETAILS')archSec.open=false;
+    // Под конкретным статус-фильтром (не "все"/"Закрыта") секция закрытых
+    // вакансий скрывается полностью — иначе её можно раскрыть кликом по
+    // <summary> и увидеть закрытые вакансии, хотя выбран, например, "Новые".
+    if(archSec){{
+      archSec.style.display=(F.status==='all')?'':'none';
+      if(archSec.tagName==='DETAILS')archSec.open=false;
+    }}
   }}
   document.querySelectorAll('.sidebar button[data-k]').forEach(function(b){{
     var k=b.dataset.k,v=b.dataset.v,n=0;
@@ -1095,7 +1127,7 @@ function apiActionRun(){{
   }}else if(mode==='update'){{
     tbBusy(true);tbMsg('Обновляю — парсинг hh.ru, ~1–2 мин…','wait');
     fetch('/api/update').then(function(r){{return r.json();}}).then(function(d){{
-      if(d.ok){{tbMsg('Готово. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
+      if(d.ok){{sessionStorage.setItem('syncUpdate',JSON.stringify({{ok:true,steps:d.steps,at:Date.now()}}));tbMsg('Готово. Перезагружаю…');setTimeout(function(){{location.reload();}},700);}}
       else{{tbBusy(false);setUpdateBtn(false);var s=(d.steps||[]).map(function(x){{return x[0]+':'+(x[1]?'ok':'FAIL');}}).join(' ');tbMsg('Ошибка: '+s,'err');}}
     }}).catch(function(e){{tbBusy(false);setUpdateBtn(false);tbMsg('Нет связи. ('+e+')','err');}});
   }}else{{
@@ -1296,6 +1328,8 @@ function resumePolling(){{
       if(age<120)tbMsg(d.ok?'✓ '+steps:'✗ '+steps,d.ok?'':'err');
     }}
   }}).catch(function(){{}});
+  var _su=sessionStorage.getItem('syncUpdate');
+  if(_su){{try{{var _r=JSON.parse(_su);sessionStorage.removeItem('syncUpdate');var _age=(Date.now()-(_r.at||0))/1000;if(_age<120){{var _s=(_r.steps||[]).map(function(x){{return x[0]+':'+(x[1]?'✓':'✗');}}).join(' → ');tbMsg(_r.ok?'✓ Обновлено: '+_s:'✗ Ошибка: '+_s,_r.ok?'':'err');}}}}catch(e){{}}}}
   fetch('/api/check-progress').then(function(r){{return r.json();}}).then(function(d){{
     if(d.running){{
       setUpdateBtn(true);
