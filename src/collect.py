@@ -22,7 +22,7 @@ CONFIG = os.path.join(ROOT, "config.json")
 STORE = os.path.join(DATA, "store.json")
 
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/126.0 Safari/537.36")
+      "(KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36")
 
 
 def log(m):
@@ -43,10 +43,23 @@ def write_json(path, data):
 
 def fetch(url):
     req = urllib.request.Request(url, headers={
-        "User-Agent": UA, "Accept-Language": "ru,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml"})
+        "User-Agent": UA,
+        "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+    })
     with urllib.request.urlopen(req, timeout=30) as r:
-        return r.read().decode("utf-8", "replace")
+        raw = r.read()
+        enc = r.headers.get_content_charset("utf-8")
+        import gzip, zlib
+        ce = r.headers.get("Content-Encoding", "")
+        if "gzip" in ce:
+            raw = gzip.decompress(raw)
+        elif "deflate" in ce:
+            raw = zlib.decompress(raw)
+        return raw.decode(enc, "replace")
 
 
 def initial_state(page_html):
@@ -104,7 +117,14 @@ def search_items(cfg):
             if s.get("area"):
                 params["area"] = s["area"]
             url = "https://hh.ru/search/vacancy?" + urllib.parse.urlencode(params)
-            data = initial_state(fetch(url))
+            try:
+                html_page = fetch(url)
+            except urllib.error.HTTPError as e:
+                log(f"  search '{query}' page {page}: HTTP {getattr(e, 'code', '?')} — пропуск")
+                if getattr(e, "code", None) == 403:
+                    time.sleep(delay * 2)
+                break
+            data = initial_state(html_page)
             vsr = data.get("vacancySearchResult", {}) or {}
             vlist = vsr.get("vacancies", []) or []
             for v in vlist:
@@ -735,6 +755,8 @@ def main():
 
     backup_store(STORE)
     write_json(STORE, store)
+    write_json(os.path.join(DATA, "last_collect.json"),
+               {"added": added, "total": len(store), "at": now})
     log(f"\nDone. +{added} new. store.json now holds {len(store)} vacancies.")
 
 
